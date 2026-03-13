@@ -15,7 +15,10 @@ vi.mock('../../src/utils/paths.js', async (importOriginal) => {
   };
 });
 
-describe('init command', () => {
+import { copyTemplates } from '../../src/generators/template-copier.js';
+import { buildInitConfig } from '../../src/generators/preset-resolver.js';
+
+describe('copyTemplates', () => {
   let tmpDir: string;
 
   beforeEach(() => {
@@ -27,9 +30,20 @@ describe('init command', () => {
     fs.rmSync(tmpDir, { recursive: true });
   });
 
+  it('generates ao.yaml with correct values', async () => {
+    const config = buildInitConfig('solo', { baseBranch: 'develop' });
+    await copyTemplates(tmpDir, config);
+
+    const aoYaml = fs.readFileSync(path.join(tmpDir, '.ao', 'ao.yaml'), 'utf-8');
+    expect(aoYaml).toContain('preset: solo');
+    expect(aoYaml).toContain('downstream: approve-only');
+    expect(aoYaml).toContain('base_branch: develop');
+    expect(aoYaml).toContain('git_strategy: worktree');
+  });
+
   it('generates expected directory structure', async () => {
-    const { initProject } = await import('../../src/commands/init.js');
-    await initProject(tmpDir, 'solo');
+    const config = buildInitConfig('solo', { baseBranch: 'main' });
+    await copyTemplates(tmpDir, config);
     expect(fs.existsSync(path.join(tmpDir, '.ao', 'ao.yaml'))).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, '.claude', 'agents', 'orchestrator.md'))).toBe(true);
   });
