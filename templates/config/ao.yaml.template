@@ -18,8 +18,8 @@ autonomy:
 
 # --- Git 戦略 ---
 git:
-  strategy: worktree            # worktree（超推奨） | branch
-  base_branch: main             # ベースブランチ（main, develop, 任意のブランチ）
+  strategy: {{GIT_STRATEGY}}    # worktree（超推奨） | branch
+  base_branch: {{BASE_BRANCH}}  # ベースブランチ（main, develop, 任意のブランチ）
   lock_base_branch: true        # ベースブランチを直接変更しない（推奨）
   branch_prefix: konbini/
 

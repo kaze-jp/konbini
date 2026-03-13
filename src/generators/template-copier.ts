@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getTemplatePath, getTargetPaths } from '../utils/paths.js';
-import { resolvePreset } from './preset-resolver.js';
+import type { InitConfig } from './preset-resolver.js';
 import { log } from '../utils/logger.js';
 
 interface CopyOptions {
@@ -31,12 +31,11 @@ function copyDir(srcDir: string, destDir: string, overwrite: boolean) {
 
 export async function copyTemplates(
   projectRoot: string,
-  presetName: string,
+  config: InitConfig,
   options: CopyOptions = {}
 ) {
   const { overwrite = true } = options;
   const paths = getTargetPaths(projectRoot);
-  const preset = resolvePreset(presetName);
 
   // Agents
   copyDir(getTemplatePath('agents'), paths.agents, overwrite);
@@ -70,10 +69,12 @@ export async function copyTemplates(
   // ao.yaml (テンプレートからプリセット値を適用して生成)
   const aoTemplate = fs.readFileSync(getTemplatePath('config/ao.yaml.template'), 'utf-8');
   const aoContent = aoTemplate
-    .replace('{{PRESET}}', presetName)
-    .replace('{{DOWNSTREAM}}', preset.downstream)
-    .replace('{{R8_ACTOR}}', preset.R8_actor)
-    .replace('{{AUTO_MERGE}}', String(preset.auto_merge));
+    .replace('{{PRESET}}', config.preset)
+    .replace('{{DOWNSTREAM}}', config.downstream)
+    .replace('{{R8_ACTOR}}', config.R8Actor)
+    .replace('{{AUTO_MERGE}}', String(config.autoMerge))
+    .replace('{{BASE_BRANCH}}', config.baseBranch)
+    .replace('{{GIT_STRATEGY}}', config.gitStrategy);
 
   const aoPath = paths.aoConfig;
   if (overwrite || !fs.existsSync(aoPath)) {

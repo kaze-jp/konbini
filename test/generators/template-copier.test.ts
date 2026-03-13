@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { copyTemplates } from '../../src/generators/template-copier.js';
+import { buildInitConfig } from '../../src/generators/preset-resolver.js';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -28,12 +29,12 @@ describe('copyTemplates', () => {
   });
 
   it('creates .ao directory structure', async () => {
-    await copyTemplates(tmpDir, 'solo');
+    await copyTemplates(tmpDir, buildInitConfig('solo'));
     expect(fs.existsSync(path.join(tmpDir, '.ao', 'ao.yaml'))).toBe(true);
   });
 
   it('applies preset to ao.yaml', async () => {
-    await copyTemplates(tmpDir, 'solo-full-auto');
+    await copyTemplates(tmpDir, buildInitConfig('solo-full-auto'));
     const content = fs.readFileSync(path.join(tmpDir, '.ao', 'ao.yaml'), 'utf-8');
     expect(content).toContain('preset: solo-full-auto');
     expect(content).toContain('downstream: full-auto');
@@ -43,7 +44,7 @@ describe('copyTemplates', () => {
     const aoDir = path.join(tmpDir, '.ao');
     fs.mkdirSync(aoDir, { recursive: true });
     fs.writeFileSync(path.join(aoDir, 'ao.yaml'), 'existing: true');
-    await copyTemplates(tmpDir, 'solo', { overwrite: false });
+    await copyTemplates(tmpDir, buildInitConfig('solo'), { overwrite: false });
     const content = fs.readFileSync(path.join(aoDir, 'ao.yaml'), 'utf-8');
     expect(content).toBe('existing: true');
   });

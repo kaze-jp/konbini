@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "plugins": {
+    "feature-dev@claude-plugins-official": [{ "scope": "user", "installPath": "/tmp", "version": "1.0.0", "installedAt": "2026-01-01T00:00:00Z", "lastUpdated": "2026-01-01T00:00:00Z", "gitCommitSha": "abc" }],
+    "superpowers@claude-plugins-official": [{ "scope": "user", "installPath": "/tmp", "version": "1.0.0", "installedAt": "2026-01-01T00:00:00Z", "lastUpdated": "2026-01-01T00:00:00Z", "gitCommitSha": "def" }]
+  }
+}

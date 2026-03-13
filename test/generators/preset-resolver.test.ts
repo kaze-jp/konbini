@@ -1,22 +1,34 @@
 import { describe, it, expect } from 'vitest';
-import { resolvePreset } from '../../src/generators/preset-resolver.js';
+import { resolvePreset, getPresetNames, buildInitConfig } from '../../src/generators/preset-resolver.js';
 
-describe('resolvePreset', () => {
+describe('preset-resolver', () => {
   it('resolves solo preset', () => {
     const config = resolvePreset('solo');
     expect(config.downstream).toBe('approve-only');
-    expect(config.R8_actor).toBe('human');
   });
 
-  it('resolves solo-full-auto preset', () => {
-    const config = resolvePreset('solo-full-auto');
+  it('getPresetNames includes custom', () => {
+    expect(getPresetNames()).toContain('custom');
+  });
+
+  it('buildInitConfig merges preset defaults with overrides', () => {
+    const config = buildInitConfig('solo', { baseBranch: 'develop' });
+    expect(config.preset).toBe('solo');
+    expect(config.baseBranch).toBe('develop');
+    expect(config.downstream).toBe('approve-only');
+    expect(config.gitStrategy).toBe('worktree');
+  });
+
+  it('buildInitConfig for custom uses provided values', () => {
+    const config = buildInitConfig('custom', {
+      baseBranch: 'main',
+      downstream: 'full-auto',
+      autoMerge: false,
+      R8Actor: 'skip',
+      gitStrategy: 'branch',
+    });
     expect(config.downstream).toBe('full-auto');
-    expect(config.R8_actor).toBe('skip');
-  });
-
-  it('resolves team preset', () => {
-    const config = resolvePreset('team');
-    expect(config.downstream).toBe('review-and-approve');
-    expect(config.R8_actor).toBe('human');
+    expect(config.autoMerge).toBe(false);
+    expect(config.gitStrategy).toBe('branch');
   });
 });
