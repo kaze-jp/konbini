@@ -184,38 +184,97 @@ export async function initProject(projectRoot: string, config: InitConfig, claud
   log.info('Next: Claude Code で /kiro:spec-init <feature> を実行してください');
 }
 
+// --- Entry point (testable core) ---
+export async function runInitWithPrompter(args: string[], prompter: Prompter, projectRoot: string) {
+  const flags = parseInitFlags(args);
+  const validPresets = getPresetNames();
+  const validLangs = ['en', 'ja'];
+
+  // Early validation
+  if (flags.preset && !validPresets.includes(flags.preset as any)) {
+    log.error(`Invalid preset: ${flags.preset}. Valid: ${validPresets.join(', ')}`);
+    process.exit(1);
+  }
+  if (flags.lang && !validLangs.includes(flags.lang)) {
+    log.error(`Invalid language: ${flags.lang}. Valid: ${validLangs.join(', ')}`);
+    process.exit(1);
+  }
+
+  // Step 1: Base branch
+  let baseBranch: string;
+  if (flags.branch !== undefined) {
+    baseBranch = flags.branch || detectBaseBranch();
+  } else if (flags.yes) {
+    baseBranch = detectBaseBranch();
+  } else {
+    baseBranch = await askBaseBranch(prompter);
+  }
+
+  // Step 2: Preset
+  let presetName: string;
+  if (flags.preset) {
+    presetName = flags.preset;
+  } else if (flags.yes) {
+    presetName = 'solo';
+  } else {
+    presetName = await askPreset(prompter);
+  }
+
+  // Step 2b: Custom settings
+  let customOverrides: Partial<InitConfig> = {};
+  if (presetName === 'custom' && !flags.yes) {
+    customOverrides = await askCustomSettings(prompter);
+  }
+
+  const config = buildInitConfig(presetName, { baseBranch, ...customOverrides });
+
+  // Step 3: CLAUDE.md config
+  let claudeMdConfig: ClaudeMdConfig;
+  if (flags.yes || (flags.lang !== undefined && flags.claudeMdPath !== undefined)) {
+    const defaultPath = 'CLAUDE.md';
+    const existingPath = path.resolve(projectRoot, defaultPath);
+    let detectedLang = 'en';
+    if (fs.existsSync(existingPath)) {
+      const content = fs.readFileSync(existingPath, 'utf-8');
+      detectedLang = detectLanguage(content);
+    }
+    claudeMdConfig = {
+      language: flags.lang ?? detectedLang,
+      path: flags.claudeMdPath ?? defaultPath,
+    };
+  } else if (flags.lang !== undefined || flags.claudeMdPath !== undefined) {
+    // Partial flags: resolve specified ones, prompt for the rest
+    const defaultPath = 'CLAUDE.md';
+    const existingPath = path.resolve(projectRoot, defaultPath);
+    let detectedLang = 'en';
+    if (fs.existsSync(existingPath)) {
+      const content = fs.readFileSync(existingPath, 'utf-8');
+      detectedLang = detectLanguage(content);
+    }
+    if (flags.lang !== undefined && flags.claudeMdPath === undefined) {
+      const pathAnswer = await prompter.ask(`  CLAUDE.md path [${defaultPath}]: `);
+      claudeMdConfig = { language: flags.lang, path: pathAnswer.trim() || defaultPath };
+    } else {
+      // flags.claudeMdPath set, flags.lang not set
+      log.header('CLAUDE.md SDD Injection');
+      log.info('  1) English');
+      log.info('  2) 日本語');
+      const langAnswer = await prompter.ask(`\n  Select language [${detectedLang === 'ja' ? '2' : '1'}]: `);
+      const langMap: Record<string, string> = { '1': 'en', '2': 'ja', '': detectedLang };
+      claudeMdConfig = { language: langMap[langAnswer.trim()] ?? detectedLang, path: flags.claudeMdPath! };
+    }
+  } else {
+    claudeMdConfig = await askClaudeMdConfig(prompter, projectRoot);
+  }
+
+  await initProject(projectRoot, config, claudeMdConfig);
+}
+
 // --- Entry point ---
 export async function runInit(args: string[]) {
   const prompter = await createPrompter();
-
   try {
-    // Step 1: Base branch
-    const baseBranch = await askBaseBranch(prompter);
-
-    // Step 2: Preset
-    let presetName = args[0];
-    if (!presetName) {
-      presetName = await askPreset(prompter);
-    }
-
-    const validPresets = getPresetNames();
-    if (!validPresets.includes(presetName as any)) {
-      log.error(`Invalid preset: ${presetName}. Valid: ${validPresets.join(', ')}`);
-      process.exit(1);
-    }
-
-    // Step 2b: Custom settings
-    let customOverrides: Partial<InitConfig> = {};
-    if (presetName === 'custom') {
-      customOverrides = await askCustomSettings(prompter);
-    }
-
-    const config = buildInitConfig(presetName, { baseBranch, ...customOverrides });
-
-    // Step 3: CLAUDE.md config
-    const claudeMdConfig = await askClaudeMdConfig(prompter, process.cwd());
-
-    await initProject(process.cwd(), config, claudeMdConfig);
+    await runInitWithPrompter(args, prompter, process.cwd());
   } finally {
     prompter.close();
   }

@@ -81,6 +81,86 @@ describe('parseInitFlags', () => {
   });
 });
 
+describe('runInit — non-interactive flags', () => {
+  let tmpDir: string;
+  let mockPrompter: { ask: ReturnType<typeof vi.fn>; close: ReturnType<typeof vi.fn> };
+  let exitSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'konbini-init-'));
+    fs.mkdirSync(path.join(tmpDir, '.git'), { recursive: true });
+    mockPrompter = {
+      ask: vi.fn().mockResolvedValue(''),
+      close: vi.fn(),
+    };
+    exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('process.exit');
+    }) as any);
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true });
+    exitSpy.mockRestore();
+  });
+
+  it('--yes skips all prompts', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--yes'], mockPrompter, tmpDir);
+    expect(mockPrompter.ask).not.toHaveBeenCalled();
+  });
+
+  it('--preset solo skips preset prompt but prompts for branch and lang', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--preset', 'solo'], mockPrompter, tmpDir);
+    const questions = mockPrompter.ask.mock.calls.map((c: string[]) => c[0]);
+    expect(questions.some((q: string) => q.includes('Base branch'))).toBe(true);
+    expect(questions.some((q: string) => q.includes('Select preset'))).toBe(false);
+    expect(questions.some((q: string) => q.includes('Select language'))).toBe(true);
+  });
+
+  it('--preset invalid exits with code 1', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await expect(
+      runInitWithPrompter(['--preset', 'invalid', '--yes'], mockPrompter, tmpDir)
+    ).rejects.toThrow('process.exit');
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('--lang invalid exits with code 1', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await expect(
+      runInitWithPrompter(['--lang', 'fr', '--yes'], mockPrompter, tmpDir)
+    ).rejects.toThrow('process.exit');
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('--preset custom --yes uses default custom settings without prompting', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--preset', 'custom', '--yes'], mockPrompter, tmpDir);
+    expect(mockPrompter.ask).not.toHaveBeenCalled();
+  });
+
+  it('--preset custom without --yes prompts for custom settings', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--preset', 'custom'], mockPrompter, tmpDir);
+    const questions = mockPrompter.ask.mock.calls.map((c: string[]) => c[0]);
+    expect(questions.some((q: string) => q.includes('downstream'))).toBe(true);
+  });
+
+  it('--branch "" falls back to auto-detected branch', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--branch', '', '--yes'], mockPrompter, tmpDir);
+    expect(mockPrompter.ask).not.toHaveBeenCalled();
+  });
+
+  it('no flags preserves full interactive behavior', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter([], mockPrompter, tmpDir);
+    // Should prompt for branch, preset, lang, and path (at least 4 calls)
+    expect(mockPrompter.ask.mock.calls.length).toBeGreaterThanOrEqual(4);
+  });
+});
+
 describe('init — copyTemplates', () => {
   let tmpDir: string;
 
