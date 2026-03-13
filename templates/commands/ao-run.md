@@ -1,6 +1,6 @@
 # AO Autonomous Execution
 
-Launch the AO orchestrator for autonomous feature implementation. Reads approved tasks and executes them through the full implementation loop.
+Launch the Agent Orchestrator for fully autonomous feature development. The orchestrator takes approved specs and drives the entire pipeline: implementation → integration → PR → review → merge.
 
 ## Usage
 
@@ -11,82 +11,66 @@ Launch the AO orchestrator for autonomous feature implementation. Reads approved
 ## Instructions
 
 1. **Validate prerequisites**: Verify all required spec documents exist:
-   - `.kiro/specs/$FEATURE_NAME/requirements.md` (required)
-   - `.kiro/specs/$FEATURE_NAME/design.md` (required)
-   - `.kiro/specs/$FEATURE_NAME/tasks.md` (required)
+   - `.kiro/specs/$FEATURE_NAME/requirements.md` (required, R1 approved)
+   - `.kiro/specs/$FEATURE_NAME/design.md` (required, R2 approved)
+   - `.kiro/specs/$FEATURE_NAME/tasks.md` (required, R3 approved)
 
-   If any are missing, report which documents are absent and which commands to run.
+   If any are missing, report which documents are absent and which commands to run:
+   - `/kiro:spec-init` → `/kiro:spec-requirements` → `/kiro:spec-design` → `/kiro:spec-tasks`
 
-2. **Read the task list** from `.kiro/specs/$FEATURE_NAME/tasks.md` and parse:
-   - All task definitions with their dependencies
-   - Parallel execution groups
-   - File conflict matrix
-   - Current completion status (resume support)
+2. **Read configuration** from `.ao/ao.yaml`:
+   - `preset` and `autonomy.downstream` — determines how much human intervention is needed
+   - `git.strategy` and `git.base_branch` — worktree vs branch strategy
+   - `quality_gates.commands` — project-specific test/lint/build commands
+   - `reviews.*` — which review points require human vs AI actors
 
 3. **Read steering documents** for implementation constraints:
-   - `.ao/steering/tech.md`
-   - `.ao/steering/structure.md`
-   - Any custom steering documents in `.ao/steering/`
+   - `.ao/steering/product.md` — product vision and priorities
+   - `.ao/steering/tech.md` — tech stack and coding conventions
+   - `.ao/steering/structure.md` — directory structure and naming rules
 
-4. **Build execution plan**:
-   - Identify all tasks with satisfied dependencies (ready to execute)
-   - Group parallelizable tasks (P) into execution batches
-   - Order batches by dependency chain
-   - Skip already-completed tasks (for resume scenarios)
+4. **Launch the orchestrator agent** (`orchestrator.md`) with the feature name. The orchestrator autonomously executes the full pipeline:
 
-5. **Present the execution plan** to the user:
    ```
-   Execution Plan for: <feature-name>
-
-   Batch 1 (parallel): T-001, T-002, T-003
-   Batch 2 (sequential): T-004 (depends on T-001)
-   Batch 3 (parallel): T-005, T-006
-   ...
-
-   Total: X tasks, Y batches
-   Estimated: Z tasks already complete
+   Phase 1:   Task analysis + worktree branch creation
+   Phase 1.5: Context generation for implementation workers
+   R4:        Parallel implementation (TDD + Team Agents + quality gates)
+   R5:        Integration (merge worktrees) + Simplify
+   R6:        PR creation + Multi-specialist code review (GH comments)
+   R7:        Fix loop (address review feedback until approved)
+   R8:        Pre-merge review (human/ai per downstream setting)
+   Merge:     Merge to base branch + cleanup
    ```
 
-6. **Request user approval** before beginning execution.
+5. **Downstream behavior** (determined by `autonomy.downstream`):
 
-7. **Execute each batch**:
-   - For each task in the batch:
-     - Read the design document for the relevant component
-     - Implement the changes as specified
-     - Write tests as required by the task
-     - Verify acceptance criteria
-   - After each task, update `tasks.md` with completion status
-   - After each batch, run tests to catch regressions
-   - Report batch completion and any issues
+   | Setting | R4-R7 | R8 | Merge |
+   |---------|-------|----|-------|
+   | `full-auto` | AI autonomous | Skip | Auto |
+   | `approve-only` | AI autonomous | Human approval | Auto after approval |
+   | `review-and-approve` | AI autonomous | Human review + approval | Auto after approval |
 
-8. **Handle failures during execution**:
-   - If a task fails, mark it as blocked with the reason
-   - Skip dependent tasks and move to the next independent batch
-   - Report all failures at the end of the current batch
-   - Ask the user whether to continue, retry, or abort
+6. **Escalation**: The orchestrator will pause and ask for human help when:
+   - R7 fix loop hits `max_iterations` (default: 10)
+   - Same review issue repeats 3+ times
+   - Merge conflicts cannot be auto-resolved
+   - Quality gates fail after `max_retries` (default: 3)
 
-9. **Final report** after all batches complete:
-   ```
-   AO Execution Complete: <feature-name>
+## Resume Support
 
-   Tasks completed: X / Y
-   Tasks failed: Z
-   Tests passing: A / B
-
-   Remaining work: [list of incomplete tasks]
-   ```
-
-10. **Suggest next steps**: Run `/kiro:validate-impl` for full validation.
+If execution is interrupted, run `/kiro:ao-run <feature-name>` again. The orchestrator reads task completion status from `tasks.md` and resumes from where it left off.
 
 ## Output
 
-- Implemented source files as specified in tasks
+The orchestrator produces:
+- Implemented source files with tests (TDD)
+- Merged PR on GitHub with full review trail (🤖 [ao-review/*] comments)
+- Updated `.ao/memory/review-patterns/` with learned patterns
 - Updated `.kiro/specs/<feature-name>/tasks.md` with completion status
-- Test files as specified in tasks
 
 ## Notes
 
-- The orchestrator respects the file conflict matrix; it will never execute conflicting tasks in parallel.
-- If the user interrupts execution, progress is preserved in `tasks.md` and can be resumed.
-- Large features benefit from autonomous execution; small features may be faster with `/kiro:spec-impl`.
-- The orchestrator does not push to git; the user controls their own commit workflow.
+- The orchestrator controls the full git workflow (branch, commit, push, PR, merge) as defined in `ao.yaml`.
+- For `solo-full-auto`, the entire pipeline runs without human intervention after this command.
+- For `approve-only` and `team`, the orchestrator pauses at R8 for human approval.
+- Large features benefit from `/kiro:ao-run`; small features may be faster with `/kiro:spec-impl`.
