@@ -28,7 +28,7 @@ const KONBINI_HOOK_MARKER = 'konbini:sdd-guard';
  * - On other branches: returns permissionDecision "allow"
  */
 function buildGuardCommand(baseBranch: string, claudeMdPath: string): string {
-  const askReason = `⛔ ${baseBranch}ブランチでの直接編集はSDDルールにより禁止されています。📖 ${claudeMdPath} を読み、/kiro:spec-init から開始してください。`;
+  const denyReason = `⛔ ${baseBranch}ブランチでの直接編集はSDDルールにより禁止されています。次の手順に従ってください: 1) git worktree で作業ブランチを作成 2) ${claudeMdPath} を読む 3) /kiro:spec-init から開始`;
 
   return [
     `# ${KONBINI_HOOK_MARKER}`,
@@ -38,8 +38,8 @@ function buildGuardCommand(baseBranch: string, claudeMdPath: string): string {
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
-        permissionDecision: 'ask',
-        permissionDecisionReason: askReason,
+        permissionDecision: 'deny',
+        permissionDecisionReason: denyReason,
       },
     }),
     `HOOK_JSON`,
