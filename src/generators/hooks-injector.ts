@@ -2,9 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import { log } from '../utils/logger.js';
 
+interface HookCommand {
+  type: 'command';
+  command: string;
+}
+
 interface HookEntry {
   matcher: string;
-  command: string;
+  hooks: HookCommand[];
 }
 
 interface ClaudeSettings {
@@ -23,10 +28,8 @@ const KONBINI_HOOK_MARKER = 'konbini:sdd-guard';
  * - On other branches: returns permissionDecision "allow"
  */
 function buildGuardCommand(baseBranch: string, claudeMdPath: string): string {
-  // The command must output JSON to stdout for Claude Code to parse
   const askReason = `⛔ ${baseBranch}ブランチでの直接編集はSDDルールにより禁止されています。📖 ${claudeMdPath} を読み、/kiro:spec-init から開始してください。`;
 
-  // Shell script that checks branch and outputs appropriate JSON
   return [
     `# ${KONBINI_HOOK_MARKER}`,
     `branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")`,
@@ -53,6 +56,18 @@ function buildGuardCommand(baseBranch: string, claudeMdPath: string): string {
   ].join('\n');
 }
 
+function isKonbiniHookEntry(entry: HookEntry | Record<string, unknown>): boolean {
+  // Check new format: { matcher, hooks: [{ type, command }] }
+  if (Array.isArray(entry.hooks)) {
+    return (entry.hooks as HookCommand[]).some((h) => h.command?.includes(KONBINI_HOOK_MARKER));
+  }
+  // Check old format: { matcher, command } (for cleanup of pre-0.2.7 entries)
+  if (typeof (entry as Record<string, unknown>).command === 'string') {
+    return ((entry as Record<string, unknown>).command as string).includes(KONBINI_HOOK_MARKER);
+  }
+  return false;
+}
+
 export function injectHooks(projectRoot: string, baseBranch: string, claudeMdPath: string): void {
   const settingsPath = path.join(projectRoot, '.claude', 'settings.json');
 
@@ -75,13 +90,18 @@ export function injectHooks(projectRoot: string, baseBranch: string, claudeMdPat
 
   // Remove existing konbini guard hook if present
   settings.hooks.PreToolUse = settings.hooks.PreToolUse.filter(
-    (hook) => !hook.command.includes(KONBINI_HOOK_MARKER)
+    (entry) => !isKonbiniHookEntry(entry)
   );
 
-  // Add the guard hook
+  // Add the guard hook in correct Claude Code format
   settings.hooks.PreToolUse.push({
     matcher: 'Edit|Write|MultiEdit',
-    command: buildGuardCommand(baseBranch, claudeMdPath),
+    hooks: [
+      {
+        type: 'command',
+        command: buildGuardCommand(baseBranch, claudeMdPath),
+      },
+    ],
   });
 
   fs.mkdirSync(path.dirname(settingsPath), { recursive: true });

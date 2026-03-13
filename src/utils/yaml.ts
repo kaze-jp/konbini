@@ -27,7 +27,8 @@ export function parseNestedYamlValue(content: string, keyPath: string): string |
     if (inParent) {
       const match = trimmed.match(/^(\w+):\s*(.+)$/);
       if (match && match[1] === childKey) {
-        return match[2];
+        // Strip inline YAML comments (e.g., "main  # comment" → "main")
+        return match[2].replace(/\s+#.*$/, '').trim();
       }
     }
   }
@@ -44,7 +45,9 @@ export function parseTopLevelYaml(content: string): Record<string, unknown> {
     if (line.startsWith(' ') || line.startsWith('\t')) continue;
     const match = trimmed.match(/^(\w+):\s*(.+)$/);
     if (match) {
-      const [, key, value] = match;
+      const [, key, rawValue] = match;
+      // Strip inline YAML comments
+      const value = rawValue.replace(/\s+#.*$/, '').trim();
       if (value === 'true') result[key] = true;
       else if (value === 'false') result[key] = false;
       else if (/^\d+$/.test(value)) result[key] = parseInt(value, 10);
