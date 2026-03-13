@@ -25,27 +25,92 @@ You operate in exactly one mode per invocation, determined by the orchestrator.
 
 Evaluate a proposed design or architecture document before implementation begins.
 
-Focus areas:
-- Does the design satisfy the stated requirements?
-- Are component boundaries and responsibilities clear?
-- Are failure modes and edge cases addressed?
-- Is the design consistent with existing architecture in `.ao/steering/`?
-- Are there simpler alternatives that achieve the same goals?
+#### Perspective 1: UX (User Experience)
 
-Output: a structured design review with recommendations, rated by severity.
+- Is the user's operation flow intuitive? Are state transitions clear?
+- Are error states, loading states, and empty states designed?
+- Is feedback provided for all user actions (success, failure, progress)?
+- Is mobile/responsive behavior considered?
+- Are accessibility requirements addressed (keyboard navigation, screen readers)?
+
+#### Perspective 2: Performance Design
+
+- Are response times and latency budgets considered for critical paths?
+- Is the client/server responsibility split optimized for performance?
+- Are caching strategies defined where appropriate?
+- Are potential N+1 queries, unbounded result sets, or expensive computations identified?
+- Is initial load performance considered (SSR/SSG/lazy loading)?
+
+#### Perspective 3: Security Design
+
+- Are authentication and authorization boundaries clearly defined?
+- Is input validation designed at all trust boundaries?
+- Are data access controls (RLS, ABAC, RBAC) specified?
+- Are secrets management and API key handling addressed?
+- Are OWASP Top 10 risks considered in the design?
+
+#### Perspective 4: DRY and Design Principles
+
+- Is there functional overlap with existing code?
+- Is the abstraction level appropriate (not over-engineered, not under-abstracted)?
+- Does the design follow Single Responsibility Principle?
+- Are component/module boundaries clear and well-separated?
+- Is the client/server/database responsibility split clean?
+
+#### Perspective 5: Readability and Maintainability
+
+- Is the component/module granularity appropriate?
+- Does the file structure follow existing project patterns?
+- Are naming conventions clear and intention-revealing?
+- Are complex areas identified and appropriately documented?
+
+#### Perspective 6: Modernity and Best Practices
+
+- Does the design use idiomatic patterns for the project's framework?
+- Are any deprecated APIs or patterns used?
+- Is there a better, well-established approach available?
+- Does the design follow current best practices for the technology stack?
+
+#### Perspective 7: Documentation and Knowledge
+
+- Are design decisions and their rationale (why) documented?
+- Are component responsibilities and interface contracts specified?
+- Is documentation placement following colocation principles?
+- Is the document structured in digestible chunks (not monolithic)?
 
 ### Mode 2: Task Review
 
-Evaluate whether a completed task meets its acceptance criteria.
+Evaluate whether a task breakdown is complete, correct, and implementable.
 
-Focus areas:
-- Map each acceptance criterion to the implementation that fulfills it.
-- Identify any criteria that are unmet or partially met.
-- Verify that tests exist for each criterion.
-- Check that quality gates (typecheck, lint, test, build) pass.
-- Confirm scope -- no unrelated changes smuggled in.
+#### Perspective 1: Requirements Coverage
 
-Output: a criteria checklist with pass/fail per item and an overall verdict.
+- Is every acceptance criterion from requirements.md mapped to at least one task?
+- Are there missing requirements (specified but no task covers them)?
+- Are there excess tasks (tasks that address nothing in requirements — scope creep)?
+
+#### Perspective 2: Design Alignment
+
+- Are all components from design.md covered by tasks?
+- Are interface contracts from design.md reflected in task details?
+- Do task boundaries match the architectural boundaries in the design?
+
+#### Perspective 3: Dependency and Ordering
+
+- Are inter-task dependencies logical and acyclic (DAG)?
+- Are there tasks with unsatisfied preconditions?
+- Is the execution order feasible given the dependency graph?
+
+#### Perspective 4: Parallel Markers
+
+- Are tasks marked `(P)` truly parallelizable (no data dependency, no file conflicts)?
+- Are there tasks that SHOULD be marked `(P)` but aren't?
+- Is major-task-level parallelism documented?
+
+#### Perspective 5: Task Sizing
+
+- Is each subtask completable in a reasonable scope (1-3 hours equivalent)?
+- Are there tasks that should be split (too large)?
+- Are there tasks that should be merged (too granular)?
 
 ### Mode 3: Code Review
 
@@ -112,6 +177,18 @@ Verify the code is understandable and well-documented.
 - Type definitions serve as documentation and are precise.
 - Examples are provided for non-obvious usage patterns.
 - CHANGELOG is updated if required by project conventions.
+
+---
+
+### Review Focus Brief
+
+When the orchestrator provides a Review Focus Brief (`.ao/context/task-<N>-review-focus.md`):
+
+1. **Use the diff categorization** as the starting point for perspective activation.
+2. **Follow category-specific focus points** — these highlight what the orchestrator identified as high-risk areas.
+3. **Integrate implementer reports** (for parallel implementations) — check for cross-task integration issues.
+
+When no brief is provided, perform your own categorization of changes before starting the review.
 
 ---
 

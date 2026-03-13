@@ -68,24 +68,48 @@ Status: Parsing tasks.md...
 ───────────────────────────────
 ```
 
-Progress mapping:
+Progress mapping (labeled phases):
+
+```
+[P1]━[P1.5]━[R4]━[R4.5]━[R5]━[R5.5]━[R6]━[R7]━[R8]━[Done]
+```
+
+- Completed phases: `[P1]✅`
+- Current phase: `↑ 現在地` marker below
+- Pending phases: plain `[R6]`
+
+Example at R4.5:
+```
+[P1]✅━[P1.5]✅━[R4]✅━[R4.5]━[R5]━[R5.5]━[R6]━[R7]━[R8]━[Done]
+                         ↑ 現在地
+```
+
+When in R4 with multiple tasks, also show per-task status:
+```
+[P1]✅━[P1.5]✅━[R4]━...
+Task 1/3: ✓ | Task 2/3: ◆ | Task 3/3: ○
+```
+
+Alternative simple bar format:
 
 | Phase     | Progress | Label                  |
 |-----------|----------|------------------------|
 | Phase 1   | `[██░░░░░░░░░░░░░░]` | タスク分析 + ブランチ作成   |
 | Phase 1.5 | `[███░░░░░░░░░░░░░]` | コンテキスト生成           |
-| R4        | `[██████░░░░░░░░░░]` | 並列実装 (TDD)            |
-| R5        | `[█████████░░░░░░░]` | 統合 + Simplify           |
-| R6        | `[███████████░░░░░]` | PR作成 + レビュー         |
-| R7        | `[█████████████░░░]` | 修正ループ               |
-| R8        | `[███████████████░░]` | マージ前レビュー          |
+| R4        | `[█████░░░░░░░░░░░]` | 並列実装 (TDD)            |
+| R4.5      | `[██████░░░░░░░░░░]` | コードセルフレビュー       |
+| R5        | `[███████░░░░░░░░░]` | 統合 + Simplify           |
+| R5.5      | `[████████░░░░░░░░]` | Ship前確認                |
+| R6        | `[█████████░░░░░░░]` | PR作成 + レビュー         |
+| R7        | `[███████████░░░░░]` | 修正ループ               |
+| R8        | `[█████████████░░░]` | マージ前レビュー          |
 | Complete  | `[████████████████]`  | マージ完了               |
 
 When in R4 with multiple tasks, show per-task status:
 
 ```
 ───────────────────────────────
-[██████░░░░░░░░░░] R4 — 並列実装
+[█████░░░░░░░░░░░] R4 — 並列実装
 Task 1/3: ✓ complete | Task 2/3: ◆ in progress | Task 3/3: ○ pending
 ───────────────────────────────
 ```
@@ -97,7 +121,7 @@ Task 1/3: ✓ complete | Task 2/3: ◆ in progress | Task 3/3: ○ pending
 ### Overview
 
 ```
-Phase 1 → Phase 1.5 → R4 → R5 → R6 → R7 → R8 → Merge → (next task or done)
+Phase 1 → Phase 1.5 → R4 → R4.5 → R5 → R5.5 → R6 → R7 → R8 → Merge → (next task or done)
 ```
 
 Each phase is detailed below. Follow them in strict order. Do not skip phases unless
@@ -255,6 +279,52 @@ not a blocker.
 
 ---
 
+### R4.5: Code Self-Review (コードセルフレビュー)
+
+**Input:** All tasks implemented, quality gates green per worktree.
+
+**Skills to invoke:**
+- Invoke the reviewer agent (`.claude/agents/reviewer.md`) in **Code Review** mode.
+
+**Purpose:** Catch issues BEFORE integration. Fix problems when they're still isolated in worktrees,
+not after they've been merged together.
+
+**Steps:**
+
+1. **Generate Review Focus Brief.**
+
+   Analyze `git diff <base_branch>...HEAD` across all task branches:
+   - Categorize changes: Components / Hooks / Server Actions / Route Handlers / Types / Tests / Config
+   - Auto-generate category-specific focus points:
+     - New Server Actions → input validation check
+     - `'use client'` additions → necessity verification
+     - DB query changes → RLS policy check
+     - AI prompt changes → injection protection check
+   - Aggregate implementer completion reports (parallel tasks)
+
+2. **Invoke reviewer in Code Review mode.**
+
+   Pass:
+   - Feature name
+   - `git diff <base_branch>...HEAD` (full changeset)
+   - `.kiro/specs/<feature>/` documents
+   - Review Focus Brief from step 1
+
+3. **Process verdict:**
+
+   | Verdict | Condition | Action |
+   |---------|-----------|--------|
+   | PASS | Critical=0, High=0 | Proceed to R5 |
+   | PASS with fixes | Warning only | Auto-fix → proceed to R5 |
+   | FAIL | Critical≥1 or High≥1 | Fix → re-review (max 3 rounds) |
+   | ESCALATE | 3 rounds failed | ESCALATE to human |
+
+**Output:** Self-review passed, all issues resolved.
+
+**Failure:** 3 consecutive FAIL verdicts → ESCALATE.
+
+---
+
 ### R5: Integration + Simplify (統合)
 
 **Input:** Completed task worktrees, all quality gates green individually.
@@ -309,6 +379,51 @@ not a blocker.
 **Output:** Clean, simplified, fully-tested integration branch.
 
 **Failure:** Unresolvable merge conflict → escalate. Quality gates fail after max retries → escalate.
+
+---
+
+### R5.5: Ship-Before Checkpoint (Ship前確認)
+
+**Input:** Clean, integrated, simplified codebase.
+
+**Behavior depends on `autonomy.downstream`:**
+
+#### `full-auto`
+- **Skip R5.5 entirely.** Proceed to R6.
+
+#### `approve-only` or `review-and-approve`
+- **Pause for human confirmation** before creating PR.
+
+Display checkpoint:
+
+```
+───────────────────────────────
+[█████████░░░░░░░] R5.5 — Ship前確認
+Feature: <feature-name>
+
+完了した作業:
+- TDD実装完了（N タスク）
+- Code Self-Review: PASS ✅
+- 統合 + Simplify: 完了 ✅
+- 品質ゲート: ALL PASS ✅
+
+確認ポイント:
+- [この feature 固有の判断ポイント]
+
+成果物:
+📄 変更: N files, +M tests
+📄 差分: git diff <base_branch>...HEAD
+
+次のアクション:
+→ proceed: PR作成 & AIレビューへ
+→ verify: 動作確認してから判断
+→ revise: 修正指示を記載
+───────────────────────────────
+```
+
+**Wait for human response.** On `proceed`, continue to R6.
+
+**Output:** Human approval to proceed with PR creation.
 
 ---
 
@@ -540,6 +655,7 @@ autonomous resolution is impossible or unsafe.
 |---------|-----------|-------|
 | R7 max iterations | `iteration >= reviews.R7_fix_loop.max_iterations` | R7 |
 | Same issue repeated | Same finding × `escalation_trigger.count` consecutive times | R7 |
+| Self-review stuck | 3 consecutive FAIL verdicts in R4.5 | R4.5 |
 | Merge conflict | Conflict not auto-resolvable | R5 |
 | Quality gates stuck | Fails `quality_gates.max_retries` times consecutively | R4, R5, R7 |
 | Task parse error | `tasks.md` cannot be parsed | Phase 1 |
@@ -951,6 +1067,13 @@ R4:
   □ Handle sequential tasks after parallel completion
   □ Display checkpoint with per-task status
 
+R4.5:
+  □ Generate Review Focus Brief (categorize changes, focus points)
+  □ Invoke reviewer in Code Review mode
+  □ Process verdict (PASS/FAIL/ESCALATE)
+  □ Fix issues if FAIL (max 3 rounds)
+  □ Display checkpoint
+
 R5:
   □ Enter integration worktree
   □ Merge task branches sequentially
@@ -959,6 +1082,12 @@ R5:
   □ Run /superpowers:verification-before-completion
   □ Run /simplify (required: after_integration)
   □ Re-run quality gates after simplify
+  □ Display checkpoint
+
+R5.5 (if not full-auto):
+  □ Display Ship-Before Checkpoint
+  □ Wait for human approval
+  □ Process human response (proceed/verify/revise)
   □ Display checkpoint
 
 R6:
