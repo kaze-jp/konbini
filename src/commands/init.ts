@@ -7,6 +7,7 @@ import { detectBaseBranch } from '../checks/git-detector.js';
 import { copyTemplates } from '../generators/template-copier.js';
 import { injectClaudeMd, detectLanguage } from '../generators/claude-md-injector.js';
 import type { ClaudeMdConfig } from '../generators/claude-md-injector.js';
+import { injectHooks } from '../generators/hooks-injector.js';
 import { getPresetNames, buildInitConfig } from '../generators/preset-resolver.js';
 import type { InitConfig } from '../generators/preset-resolver.js';
 import { log } from '../utils/logger.js';
@@ -121,6 +122,9 @@ export async function initProject(projectRoot: string, config: InitConfig, claud
 
   // CLAUDE.md SDD ルール注入
   injectClaudeMd(projectRoot, claudeMdConfig);
+
+  // Claude Code hooks (SDD ガード)
+  injectHooks(projectRoot, config.baseBranch, claudeMdConfig.path);
 
   // ao.yaml に claude_md 設定を書き込み
   const aoYamlPath = path.join(projectRoot, '.ao', 'ao.yaml');

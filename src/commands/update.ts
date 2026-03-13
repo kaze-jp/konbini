@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { getTemplatePath, getTargetPaths } from '../utils/paths.js';
-import { parseTopLevelYaml } from '../utils/yaml.js';
+import { parseTopLevelYaml, parseNestedYamlValue } from '../utils/yaml.js';
 import { injectClaudeMd, readClaudeMdConfig } from '../generators/claude-md-injector.js';
+import { injectHooks } from '../generators/hooks-injector.js';
 import { log } from '../utils/logger.js';
 
 function hasCustomizations(srcDir: string, destDir: string): string[] {
@@ -69,14 +70,17 @@ export async function updateProject(projectRoot: string) {
   copyDir(getTemplatePath('spec-templates'), paths.specTemplates);
   log.success('spec templates updated');
 
-  // CLAUDE.md SDD ルール更新
+  // CLAUDE.md SDD ルール更新 + hooks 更新
   if (fs.existsSync(aoConfigPath)) {
     const aoContent = fs.readFileSync(aoConfigPath, 'utf-8');
     const claudeMdConfig = readClaudeMdConfig(aoContent);
+    const baseBranch = parseNestedYamlValue(aoContent, 'git.base_branch') ?? 'main';
     injectClaudeMd(projectRoot, claudeMdConfig);
+    injectHooks(projectRoot, baseBranch, claudeMdConfig.path);
   } else {
     // ao.yaml がない場合はデフォルト値で注入
     injectClaudeMd(projectRoot, { language: 'en', path: 'CLAUDE.md' });
+    injectHooks(projectRoot, 'main', 'CLAUDE.md');
   }
 
   log.info('ao.yaml, memory, steering は保持しました');
