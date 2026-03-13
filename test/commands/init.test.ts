@@ -23,6 +23,63 @@ vi.mock('../../src/generators/claude-md-injector.js', () => ({
 
 import { copyTemplates } from '../../src/generators/template-copier.js';
 import { buildInitConfig } from '../../src/generators/preset-resolver.js';
+import { parseInitFlags } from '../../src/commands/init.js';
+
+describe('parseInitFlags', () => {
+  it('returns defaults for empty args', () => {
+    const flags = parseInitFlags([]);
+    expect(flags).toEqual({ yes: false });
+  });
+
+  it('parses --yes flag', () => {
+    const flags = parseInitFlags(['--yes']);
+    expect(flags.yes).toBe(true);
+  });
+
+  it('parses -y shorthand', () => {
+    const flags = parseInitFlags(['-y']);
+    expect(flags.yes).toBe(true);
+  });
+
+  it('parses --preset with value', () => {
+    const flags = parseInitFlags(['--preset', 'solo']);
+    expect(flags.preset).toBe('solo');
+  });
+
+  it('parses --branch with value', () => {
+    const flags = parseInitFlags(['--branch', 'develop']);
+    expect(flags.branch).toBe('develop');
+  });
+
+  it('parses --lang with value', () => {
+    const flags = parseInitFlags(['--lang', 'ja']);
+    expect(flags.lang).toBe('ja');
+  });
+
+  it('parses --claude-md-path with value', () => {
+    const flags = parseInitFlags(['--claude-md-path', 'docs/CLAUDE.md']);
+    expect(flags.claudeMdPath).toBe('docs/CLAUDE.md');
+  });
+
+  it('parses all flags combined', () => {
+    const flags = parseInitFlags([
+      '--yes', '--preset', 'team', '--branch', 'main', '--lang', 'en', '--claude-md-path', 'CLAUDE.md',
+    ]);
+    expect(flags).toEqual({
+      yes: true,
+      preset: 'team',
+      branch: 'main',
+      lang: 'en',
+      claudeMdPath: 'CLAUDE.md',
+    });
+  });
+
+  it('ignores unknown flags', () => {
+    const flags = parseInitFlags(['--unknown', 'value', '--yes']);
+    expect(flags.yes).toBe(true);
+    expect((flags as any).unknown).toBeUndefined();
+  });
+});
 
 describe('init — copyTemplates', () => {
   let tmpDir: string;

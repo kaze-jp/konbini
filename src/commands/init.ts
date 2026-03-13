@@ -12,6 +12,40 @@ import { getPresetNames, buildInitConfig } from '../generators/preset-resolver.j
 import type { InitConfig } from '../generators/preset-resolver.js';
 import { log } from '../utils/logger.js';
 
+// --- CLI flag parser ---
+export interface InitFlags {
+  yes: boolean;
+  preset?: string;
+  branch?: string;
+  lang?: string;
+  claudeMdPath?: string;
+}
+
+export function parseInitFlags(args: string[]): InitFlags {
+  const flags: InitFlags = { yes: false };
+  for (let i = 0; i < args.length; i++) {
+    switch (args[i]) {
+      case '--yes':
+      case '-y':
+        flags.yes = true;
+        break;
+      case '--preset':
+        flags.preset = args[++i];
+        break;
+      case '--branch':
+        flags.branch = args[++i];
+        break;
+      case '--lang':
+        flags.lang = args[++i];
+        break;
+      case '--claude-md-path':
+        flags.claudeMdPath = args[++i];
+        break;
+    }
+  }
+  return flags;
+}
+
 // --- readline helper ---
 export interface Prompter {
   ask(question: string): Promise<string>;
