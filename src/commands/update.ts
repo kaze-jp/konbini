@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { getTemplatePath, getTargetPaths } from '../utils/paths.js';
 import { parseTopLevelYaml } from '../utils/yaml.js';
+import { injectClaudeMd, readClaudeMdConfig } from '../generators/claude-md-injector.js';
 import { log } from '../utils/logger.js';
 
 function hasCustomizations(srcDir: string, destDir: string): string[] {
@@ -67,6 +68,16 @@ export async function updateProject(projectRoot: string) {
 
   copyDir(getTemplatePath('spec-templates'), paths.specTemplates);
   log.success('spec templates updated');
+
+  // CLAUDE.md SDD ルール更新
+  if (fs.existsSync(aoConfigPath)) {
+    const aoContent = fs.readFileSync(aoConfigPath, 'utf-8');
+    const claudeMdConfig = readClaudeMdConfig(aoContent);
+    injectClaudeMd(projectRoot, claudeMdConfig);
+  } else {
+    // ao.yaml がない場合はデフォルト値で注入
+    injectClaudeMd(projectRoot, { language: 'en', path: 'CLAUDE.md' });
+  }
 
   log.info('ao.yaml, memory, steering は保持しました');
   log.success('update complete');

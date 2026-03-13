@@ -66,7 +66,7 @@ export async function copyTemplates(
     copyFileIfNotExists(memoryIndex, path.join(paths.memory, 'index.md'), false);
   }
 
-  // ao.yaml (テンプレートからプリセット値を適用して生成)
+  // ao.yaml (テンプレートからプリセット値を適用して生成。claude_md プレースホルダは init.ts で置換)
   const aoTemplate = fs.readFileSync(getTemplatePath('config/ao.yaml.template'), 'utf-8');
   const aoContent = aoTemplate
     .replace('{{PRESET}}', config.preset)

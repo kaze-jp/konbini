@@ -1,8 +1,12 @@
+import fs from 'fs';
+import path from 'path';
 import { checkAllTools } from '../checks/tool-checker.js';
 import { checkPlugins, printPluginStatus } from '../checks/plugin-checker.js';
 import { checkPreCommitHooks, printHooksRecommendation } from '../checks/hooks-checker.js';
 import { detectBaseBranch } from '../checks/git-detector.js';
 import { copyTemplates } from '../generators/template-copier.js';
+import { injectClaudeMd, detectLanguage } from '../generators/claude-md-injector.js';
+import type { ClaudeMdConfig } from '../generators/claude-md-injector.js';
 import { getPresetNames, buildInitConfig } from '../generators/preset-resolver.js';
 import type { InitConfig } from '../generators/preset-resolver.js';
 import { log } from '../utils/logger.js';
@@ -65,8 +69,31 @@ export async function askCustomSettings(prompter: Prompter): Promise<Partial<Ini
   };
 }
 
+// --- Step 3: CLAUDE.md language & path ---
+export async function askClaudeMdConfig(prompter: Prompter, projectRoot: string): Promise<ClaudeMdConfig> {
+  const defaultPath = 'CLAUDE.md';
+  const existingPath = path.resolve(projectRoot, defaultPath);
+  let detectedLang = 'en';
+  if (fs.existsSync(existingPath)) {
+    const content = fs.readFileSync(existingPath, 'utf-8');
+    detectedLang = detectLanguage(content);
+  }
+
+  log.header('CLAUDE.md SDD Injection');
+  log.info('  1) English');
+  log.info('  2) 日本語');
+  const langAnswer = await prompter.ask(`\n  Select language [${detectedLang === 'ja' ? '2' : '1'}]: `);
+  const langMap: Record<string, string> = { '1': 'en', '2': 'ja', '': detectedLang };
+  const language = langMap[langAnswer.trim()] ?? detectedLang;
+
+  const pathAnswer = await prompter.ask(`  CLAUDE.md path [${defaultPath}]: `);
+  const claudeMdPath = pathAnswer.trim() || defaultPath;
+
+  return { language, path: claudeMdPath };
+}
+
 // --- Main: initProject (now accepts InitConfig) ---
-export async function initProject(projectRoot: string, config: InitConfig) {
+export async function initProject(projectRoot: string, config: InitConfig, claudeMdConfig: ClaudeMdConfig) {
   log.header('konbini init');
 
   // ツールチェック
@@ -91,6 +118,27 @@ export async function initProject(projectRoot: string, config: InitConfig) {
 
   // テンプレート展開
   await copyTemplates(projectRoot, config);
+
+  // CLAUDE.md SDD ルール注入
+  injectClaudeMd(projectRoot, claudeMdConfig);
+
+  // ao.yaml に claude_md 設定を書き込み
+  const aoYamlPath = path.join(projectRoot, '.ao', 'ao.yaml');
+  if (fs.existsSync(aoYamlPath)) {
+    let aoContent = fs.readFileSync(aoYamlPath, 'utf-8');
+    if (aoContent.includes('{{CLAUDE_MD_LANG}}')) {
+      aoContent = aoContent
+        .replace('{{CLAUDE_MD_LANG}}', claudeMdConfig.language)
+        .replace('{{CLAUDE_MD_PATH}}', claudeMdConfig.path);
+    } else if (!aoContent.includes('claude_md:')) {
+      aoContent += `\nclaude_md:\n  language: ${claudeMdConfig.language}\n  path: ${claudeMdConfig.path}\n`;
+    } else {
+      aoContent = aoContent
+        .replace(/claude_md:\n\s+language:\s*.+\n\s+path:\s*.+/,
+          `claude_md:\n  language: ${claudeMdConfig.language}\n  path: ${claudeMdConfig.path}`);
+    }
+    fs.writeFileSync(aoYamlPath, aoContent);
+  }
 
   log.success(`konbini initialized with preset: ${config.preset}`);
   log.info(`  base branch: ${config.baseBranch}`);
@@ -126,7 +174,10 @@ export async function runInit(args: string[]) {
 
     const config = buildInitConfig(presetName, { baseBranch, ...customOverrides });
 
-    await initProject(process.cwd(), config);
+    // Step 3: CLAUDE.md config
+    const claudeMdConfig = await askClaudeMdConfig(prompter, process.cwd());
+
+    await initProject(process.cwd(), config, claudeMdConfig);
   } finally {
     prompter.close();
   }

@@ -156,6 +156,11 @@ review_comments:
   auto_resolve: true
   sync_to_memory: true
 
+# --- CLAUDE.md ---
+claude_md:
+  language: {{CLAUDE_MD_LANG}}
+  path: {{CLAUDE_MD_PATH}}
+
 # --- 学習ループ ---
 memory:
   enabled: true
