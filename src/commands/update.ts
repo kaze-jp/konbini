@@ -4,6 +4,7 @@ import { getTemplatePath, getTargetPaths } from '../utils/paths.js';
 import { parseTopLevelYaml, parseNestedYamlValue } from '../utils/yaml.js';
 import { injectClaudeMd, readClaudeMdConfig } from '../generators/claude-md-injector.js';
 import { injectHooks } from '../generators/hooks-injector.js';
+import { ensureGitignoreEntries } from '../generators/gitignore-injector.js';
 import { log } from '../utils/logger.js';
 
 function hasCustomizations(srcDir: string, destDir: string): string[] {
@@ -82,6 +83,9 @@ export async function updateProject(projectRoot: string) {
     injectClaudeMd(projectRoot, { language: 'en', path: 'CLAUDE.md' });
     injectHooks(projectRoot, 'main', 'CLAUDE.md');
   }
+
+  // .gitignore にworktreeディレクトリを追加
+  ensureGitignoreEntries(projectRoot);
 
   log.info('ao.yaml, memory, steering は保持しました');
   log.success('update complete');
