@@ -1,60 +1,75 @@
 # Start Implementation
 
-Begin implementing approved tasks from the task list, using the orchestrator agent for autonomous execution.
+Begin implementing approved tasks using TDD in an isolated worktree. This is the manual implementation command — for fully autonomous execution (implementation → PR → review → merge), use `/kiro:ao-run` instead.
 
 ## Usage
 
 ```
-/kiro:spec-impl <feature-name>
+/kiro:spec-impl <feature-name> [task-numbers]
 ```
+
+- `/kiro:spec-impl my-feature` — all pending tasks
+- `/kiro:spec-impl my-feature 1.1` — single task
+- `/kiro:spec-impl my-feature 1,2,3` — specific tasks
 
 ## Instructions
 
-1. **Read the task list** from `.kiro/specs/$FEATURE_NAME/tasks.md`. If it does not exist, instruct the user to run `/kiro:spec-tasks` first.
+1. **Validate prerequisites**:
+   - `.kiro/specs/$FEATURE_NAME/tasks.md` must exist. If not → `/kiro:spec-tasks` first.
+   - `.kiro/specs/$FEATURE_NAME/design.md` must exist.
+   - `.kiro/specs/$FEATURE_NAME/requirements.md` must exist.
 
-2. **Read the design document** from `.kiro/specs/$FEATURE_NAME/design.md` for implementation reference.
+2. **Read context**:
+   - `.kiro/specs/$FEATURE_NAME/tasks.md` — task definitions, dependencies, `(P)` markers
+   - `.kiro/specs/$FEATURE_NAME/design.md` — API contracts, data models, component design
+   - `.ao/steering/tech.md` — coding standards, patterns
+   - `.ao/steering/structure.md` — file placement conventions
+   - `.ao/ao.yaml` — quality gate commands, git strategy
 
-3. **Read steering documents** for implementation constraints:
-   - `.ao/steering/tech.md` for coding standards and patterns
-   - `.ao/steering/structure.md` for file placement conventions
+3. **Create worktree**:
+   - Use `/superpowers:using-git-worktrees` to create an isolated worktree
+   - Branch: `<git.branch_prefix><feature-name>`
+   - All implementation happens in the worktree — never on the base branch
 
-4. **Check current progress**: Look for any existing implementation progress markers in the tasks file (checked boxes in acceptance criteria).
+4. **Select tasks**:
+   - If task numbers specified → execute those tasks only
+   - Otherwise → execute all pending tasks (`- [ ]` in tasks.md)
+   - Skip already completed tasks (`- [x]`)
+   - Respect dependency ordering
 
-5. **Determine execution strategy**:
-   - Identify the next batch of tasks ready for implementation (all dependencies satisfied)
-   - Group parallelizable tasks (P) that can be executed simultaneously
-   - Present the execution plan to the user for approval
+5. **Execute each task with TDD** (invoke `/superpowers:test-driven-development`):
 
-6. **For each task, execute**:
-   - Create or modify the specified files
-   - Follow the design document's API contracts and data models exactly
-   - Write tests as specified in the task's test requirements
-   - Mark acceptance criteria as complete when satisfied
+   For each task, follow Kent Beck's TDD cycle:
 
-7. **After each task completes**:
-   - Run relevant tests to verify the task
-   - Update the task status in `tasks.md` (mark as complete)
-   - Check if blocked tasks are now unblocked
+   - **RED**: Write a failing test that captures the acceptance criteria
+   - **GREEN**: Write the minimum code to make the test pass
+   - **REFACTOR**: Clean up while keeping tests green
+   - **VERIFY**: Run quality gates from `ao.yaml` (typecheck, lint, test, build)
+   - **MARK**: Update `tasks.md` checkbox from `- [ ]` to `- [x]`
 
-8. **Handle failures**:
+6. **After each task**:
+   - Run quality gates to catch regressions
+   - Commit with task ID in message (e.g., `feat(feature): implement task 1.1`)
+   - Update `tasks.md` status
+
+7. **Handle failures**:
+   - Use `/superpowers:systematic-debugging` for persistent test failures
    - If a task cannot be completed as designed, document the blocker
-   - Suggest design modifications if needed
    - Do not proceed with dependent tasks until blockers are resolved
 
-9. **Report progress** after each batch:
-   - Tasks completed in this batch
-   - Tasks remaining
-   - Any blockers or deviations from design
-   - Next batch of tasks ready for execution
+8. **On completion**, use `/superpowers:finishing-a-development-branch` to:
+   - Verify all tests pass
+   - Choose: merge locally, create PR, keep branch, or discard
 
 ## Output
 
-- Modified source files as specified in tasks
+- Implemented source files with tests (TDD)
 - Updated `.kiro/specs/<feature-name>/tasks.md` with completion status
 
 ## Notes
 
+- All work happens in a worktree — never commit directly to the base branch.
 - Always follow the design document; do not improvise architectural decisions.
 - If the design is ambiguous, ask the user rather than guessing.
-- Run tests frequently to catch regressions early.
-- Commit after each logical group of tasks if the user has a git workflow.
+- TDD is mandatory — no implementation code before a failing test.
+- For fully autonomous execution (implementation → PR → review → merge), use `/kiro:ao-run` instead.
