@@ -1,0 +1,40 @@
+{
+  "name": "konbini",
+  "version": "0.1.0",
+  "description": "AI autonomous development framework inspired by cc-sdd. Spec-Driven Development with Agent Orchestrator.",
+  "keywords": [
+    "claude-code",
+    "sdd",
+    "spec-driven-development",
+    "agent-orchestrator",
+    "autonomous-development",
+    "tdd",
+    "ai-development"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaze-jp/konbini.git"
+  },
+  "type": "module",
+  "bin": {
+    "konbini": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "postbuild": "node scripts/add-shebang.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest -w",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
