@@ -5,6 +5,7 @@
 機能追加・改善・バグ修正の依頼を受けたとき、**直接コードを書いてはなりません**。
 必ず以下のSDDワークフローに従ってください:
 
+0. **worktree を作成** — mainブランチにいる場合、まず `git worktree` で作業ブランチを作成する。既にworktreeにいる場合はスキップ。
 1. `/kiro:spec-init <feature>` — specを初期化
 2. `/kiro:spec-requirements <feature>` — 要件を生成
 3. `/kiro:spec-design <feature>` — 技術設計を作成

@@ -5,6 +5,7 @@ This project uses **konbini** (v{{VERSION}}) for Spec-Driven Development (SDD).
 When you receive a request for a new feature, improvement, or bug fix, **you must NOT write code directly**.
 Always follow the SDD workflow below:
 
+0. **Create a worktree** — If you are on the main branch, first create a `git worktree` for the feature branch. Skip if already in a worktree.
 1. `/kiro:spec-init <feature>` — Initialize the spec
 2. `/kiro:spec-requirements <feature>` — Generate requirements
 3. `/kiro:spec-design <feature>` — Create technical design
