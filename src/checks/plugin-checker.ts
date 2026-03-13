@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import { log } from '../utils/logger.js';
 
 const REQUIRED_PLUGINS = [
@@ -12,20 +15,43 @@ export interface PluginCheckResult {
   available: boolean;
 }
 
-export function checkPlugins(): PluginCheckResult[] {
+function defaultPluginsPath(): string {
+  return path.join(os.homedir(), '.claude', 'plugins', 'installed_plugins.json');
+}
+
+export function checkPlugins(pluginsJsonPath?: string): PluginCheckResult[] {
+  const filePath = pluginsJsonPath ?? defaultPluginsPath();
+  let installedKeys: Set<string> = new Set();
+
+  try {
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    installedKeys = new Set(Object.keys(data.plugins ?? {}));
+  } catch {
+    // ファイルが無い or パース失敗 → 全て未インストール扱い
+  }
+
   return REQUIRED_PLUGINS.map((p) => ({
     ...p,
-    available: false,
+    available: installedKeys.has(`${p.name}@claude-plugins-official`),
   }));
 }
 
-export function printPluginInstructions(missing: PluginCheckResult[]) {
-  if (missing.length === 0) return;
-  log.header('Required Claude Code Plugins');
-  log.warn('以下のプラグインをインストールしてください:');
-  for (const p of missing) {
-    log.info(`  ${p.name} — ${p.purpose}`);
+export function printPluginStatus(results: PluginCheckResult[]) {
+  log.header('Claude Code Plugins');
+  const missing: PluginCheckResult[] = [];
+  for (const p of results) {
+    if (p.available) {
+      log.success(`${p.name} (installed)`);
+    } else {
+      log.error(`${p.name} — 未インストール`);
+      missing.push(p);
+    }
   }
-  log.info('');
-  log.info('Claude Code 内で /install-plugin <name> を実行してください。');
+  if (missing.length > 0) {
+    log.info('');
+    log.warn('Claude Code で以下を実行してください:');
+    for (const p of missing) {
+      log.info(`  /install-plugin ${p.name}`);
+    }
+  }
 }
