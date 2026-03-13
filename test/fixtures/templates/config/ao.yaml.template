@@ -5,3 +5,6 @@ R8_actor: {{R8_ACTOR}}
 auto_merge: {{AUTO_MERGE}}
 base_branch: {{BASE_BRANCH}}
 git_strategy: {{GIT_STRATEGY}}
+claude_md:
+  language: {{CLAUDE_MD_LANG}}
+  path: {{CLAUDE_MD_PATH}}

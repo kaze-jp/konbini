@@ -15,6 +15,11 @@ vi.mock('../../src/utils/paths.js', async (importOriginal) => {
   };
 });
 
+vi.mock('../../src/generators/claude-md-injector.js', () => ({
+  injectClaudeMd: vi.fn(),
+  readClaudeMdConfig: vi.fn().mockReturnValue({ language: 'en', path: 'CLAUDE.md' }),
+}));
+
 describe('update command', () => {
   let tmpDir: string;
 
