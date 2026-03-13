@@ -13,8 +13,8 @@ export interface Prompter {
   close(): void;
 }
 
-function createPrompter(): Prompter {
-  const readline = require('readline');
+async function createPrompter(): Promise<Prompter> {
+  const readline = await import('readline');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return {
     ask: (q: string) => new Promise<string>((resolve) => rl.question(q, resolve)),
@@ -100,7 +100,7 @@ export async function initProject(projectRoot: string, config: InitConfig) {
 
 // --- Entry point ---
 export async function runInit(args: string[]) {
-  const prompter = createPrompter();
+  const prompter = await createPrompter();
 
   try {
     // Step 1: Base branch
