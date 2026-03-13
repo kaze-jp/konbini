@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { log } from './utils/logger.js';
 
 export interface ParsedCommand {
@@ -6,7 +9,12 @@ export interface ParsedCommand {
 }
 
 export function parseArgs(args: string[]): ParsedCommand {
-  if (args.length === 0) return { command: 'help', args: [] };
+  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
+    return { command: 'help', args: [] };
+  }
+  if (args.includes('--version') || args.includes('-v')) {
+    return { command: 'version', args: [] };
+  }
 
   const [first, second, ...rest] = args;
 
@@ -54,6 +62,12 @@ async function main() {
     case 'config-show': {
       const { runConfigShow } = await import('./commands/config-show.js');
       await runConfigShow(args);
+      break;
+    }
+    case 'version': {
+      const __dirname = dirname(fileURLToPath(import.meta.url));
+      const pkg = JSON.parse(readFileSync(resolve(__dirname, '..', 'package.json'), 'utf-8'));
+      console.log(`konbini v${pkg.version}`);
       break;
     }
     default:

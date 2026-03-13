@@ -21,4 +21,20 @@ describe('parseArgs', () => {
   it('returns help for no args', () => {
     expect(parseArgs([])).toEqual({ command: 'help', args: [] });
   });
+
+  it('returns help for --help flag', () => {
+    expect(parseArgs(['--help'])).toEqual({ command: 'help', args: [] });
+  });
+
+  it('returns help for -h flag', () => {
+    expect(parseArgs(['-h'])).toEqual({ command: 'help', args: [] });
+  });
+
+  it('returns version for --version flag', () => {
+    expect(parseArgs(['--version'])).toEqual({ command: 'version', args: [] });
+  });
+
+  it('returns version for -v flag', () => {
+    expect(parseArgs(['-v'])).toEqual({ command: 'version', args: [] });
+  });
 });
