@@ -71,22 +71,22 @@ Status: Parsing tasks.md...
 Progress mapping (labeled phases):
 
 ```
-[P1]━[P1.5]━[R4]━[R4.5]━[R5]━[R5.5]━[R6]━[R7]━[R8]━[Done]
+[1]━[2]━[3]━[4]━[5]━[6]━[7]━[8]━[Done]
 ```
 
-- Completed phases: `[P1]✅`
+- Completed phases: `[1]✅`
 - Current phase: `↑ 現在地` marker below
-- Pending phases: plain `[R6]`
+- Pending phases: plain `[6]`
 
-Example at R4.5:
+Example at Phase 4:
 ```
-[P1]✅━[P1.5]✅━[R4]✅━[R4.5]━[R5]━[R5.5]━[R6]━[R7]━[R8]━[Done]
-                         ↑ 現在地
+[1]✅━[2]✅━[3]✅━[4]━[5]━[6]━[7]━[8]━[Done]
+                   ↑ 現在地
 ```
 
-When in R4 with multiple tasks, also show per-task status:
+When in Phase 3 with multiple tasks, also show per-task status:
 ```
-[P1]✅━[P1.5]✅━[R4]━...
+[1]✅━[2]✅━[3]━...
 Task 1/3: ✓ | Task 2/3: ◆ | Task 3/3: ○
 ```
 
@@ -95,21 +95,20 @@ Alternative simple bar format:
 | Phase     | Progress | Label                  |
 |-----------|----------|------------------------|
 | Phase 1   | `[██░░░░░░░░░░░░░░]` | タスク分析 + ブランチ作成   |
-| Phase 1.5 | `[███░░░░░░░░░░░░░]` | コンテキスト生成           |
-| R4        | `[█████░░░░░░░░░░░]` | 並列実装 (TDD)            |
-| R4.5      | `[██████░░░░░░░░░░]` | コードセルフレビュー       |
-| R5        | `[███████░░░░░░░░░]` | 統合 + Simplify           |
-| R5.5      | `[████████░░░░░░░░]` | Ship前確認                |
-| R6        | `[█████████░░░░░░░]` | PR作成 + レビュー         |
-| R7        | `[███████████░░░░░]` | 修正ループ               |
-| R8        | `[█████████████░░░]` | マージ前レビュー          |
+| Phase 2   | `[███░░░░░░░░░░░░░]` | コンテキスト生成           |
+| Phase 3   | `[█████░░░░░░░░░░░]` | 並列実装 (TDD)            |
+| Phase 4   | `[██████░░░░░░░░░░]` | 統合 + Simplify           |
+| Phase 5   | `[████████░░░░░░░░]` | Ship前確認                |
+| Phase 6   | `[█████████░░░░░░░]` | PR作成 + レビュー         |
+| Phase 7   | `[███████████░░░░░]` | 修正ループ               |
+| Phase 8   | `[█████████████░░░]` | マージ前レビュー          |
 | Complete  | `[████████████████]`  | マージ完了               |
 
-When in R4 with multiple tasks, show per-task status:
+When in Phase 3 with multiple tasks, show per-task status:
 
 ```
 ───────────────────────────────
-[█████░░░░░░░░░░░] R4 — 並列実装
+[█████░░░░░░░░░░░] Phase 3 — 並列実装
 Task 1/3: ✓ complete | Task 2/3: ◆ in progress | Task 3/3: ○ pending
 ───────────────────────────────
 ```
@@ -121,7 +120,7 @@ Task 1/3: ✓ complete | Task 2/3: ◆ in progress | Task 3/3: ○ pending
 ### Overview
 
 ```
-Phase 1 → Phase 1.5 → R4 → R4.5 → R5 → R5.5 → R6 → R7 → R8 → Merge → (next task or done)
+Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Merge → (next task or done)
 ```
 
 Each phase is detailed below. Follow them in strict order. Do not skip phases unless
@@ -163,7 +162,7 @@ explicitly configured to do so in `ao.yaml`.
 
 5. **Create integration branch.**
    - Branch: `<branch_prefix><feature>-integration`
-   - This is the target for R5 merge.
+   - This is the target for Phase 4 merge.
 
 **Output:** Execution plan + worktree branches ready.
 
@@ -171,7 +170,7 @@ explicitly configured to do so in `ao.yaml`.
 
 ---
 
-### Phase 1.5: Dynamic Context Generation (コンテキスト生成)
+### Phase 2: Dynamic Context Generation (コンテキスト生成)
 
 **Input:** Parsed tasks + codebase analysis
 
@@ -212,7 +211,7 @@ not a blocker.
 
 ---
 
-### R4: Parallel Implementation (並列実装 + TDD)
+### Phase 3: Parallel Implementation (並列実装 + TDD)
 
 **Input:** Execution plan + worktree branches + context briefs
 
@@ -266,7 +265,7 @@ not a blocker.
 
    ```
    ───────────────────────────────
-   [██████░░░░░░░░░░] R4 — 並列実装
+   [██████░░░░░░░░░░] Phase 3 — 並列実装
    Task 1/3: ✓ | Task 2/3: ✓ | Task 3/3: ◆ in progress
    ───────────────────────────────
    ```
@@ -279,53 +278,7 @@ not a blocker.
 
 ---
 
-### R4.5: Code Self-Review (コードセルフレビュー)
-
-**Input:** All tasks implemented, quality gates green per worktree.
-
-**Skills to invoke:**
-- Invoke the reviewer agent (`.claude/agents/reviewer.md`) in **Code Review** mode.
-
-**Purpose:** Catch issues BEFORE integration. Fix problems when they're still isolated in worktrees,
-not after they've been merged together.
-
-**Steps:**
-
-1. **Generate Review Focus Brief.**
-
-   Analyze `git diff <base_branch>...HEAD` across all task branches:
-   - Categorize changes: Components / Hooks / Server Actions / Route Handlers / Types / Tests / Config
-   - Auto-generate category-specific focus points:
-     - New Server Actions → input validation check
-     - `'use client'` additions → necessity verification
-     - DB query changes → RLS policy check
-     - AI prompt changes → injection protection check
-   - Aggregate implementer completion reports (parallel tasks)
-
-2. **Invoke reviewer in Code Review mode.**
-
-   Pass:
-   - Feature name
-   - `git diff <base_branch>...HEAD` (full changeset)
-   - `.kiro/specs/<feature>/` documents
-   - Review Focus Brief from step 1
-
-3. **Process verdict:**
-
-   | Verdict | Condition | Action |
-   |---------|-----------|--------|
-   | PASS | Critical=0, High=0 | Proceed to R5 |
-   | PASS with fixes | Warning only | Auto-fix → proceed to R5 |
-   | FAIL | Critical≥1 or High≥1 | Fix → re-review (max 3 rounds) |
-   | ESCALATE | 3 rounds failed | ESCALATE to human |
-
-**Output:** Self-review passed, all issues resolved.
-
-**Failure:** 3 consecutive FAIL verdicts → ESCALATE.
-
----
-
-### R5: Integration + Simplify (統合)
+### Phase 4: Integration + Simplify (統合)
 
 **Input:** Completed task worktrees, all quality gates green individually.
 
@@ -382,14 +335,14 @@ not after they've been merged together.
 
 ---
 
-### R5.5: Ship-Before Checkpoint (Ship前確認)
+### Phase 5: Ship-Before Checkpoint (Ship前確認)
 
 **Input:** Clean, integrated, simplified codebase.
 
 **Behavior depends on `autonomy.downstream`:**
 
 #### `full-auto`
-- **Skip R5.5 entirely.** Proceed to R6.
+- **Skip Phase 5 entirely.** Proceed to Phase 6.
 
 #### `approve-only` or `review-and-approve`
 - **Pause for human confirmation** before creating PR.
@@ -398,12 +351,11 @@ Display checkpoint:
 
 ```
 ───────────────────────────────
-[█████████░░░░░░░] R5.5 — Ship前確認
+[█████████░░░░░░░] Phase 5 — Ship前確認
 Feature: <feature-name>
 
 完了した作業:
 - TDD実装完了（N タスク）
-- Code Self-Review: PASS ✅
 - 統合 + Simplify: 完了 ✅
 - 品質ゲート: ALL PASS ✅
 
@@ -421,13 +373,13 @@ Feature: <feature-name>
 ───────────────────────────────
 ```
 
-**Wait for human response.** On `proceed`, continue to R6.
+**Wait for human response.** On `proceed`, continue to Phase 6.
 
 **Output:** Human approval to proceed with PR creation.
 
 ---
 
-### R6: PR Creation + Multi-Specialist Review (PRレビュー)
+### Phase 6: PR Creation + Multi-Specialist Review (PRレビュー)
 
 **Input:** Clean integration branch.
 
@@ -456,13 +408,13 @@ Feature: <feature-name>
    - Test coverage summary
    - Any notable architectural decisions
 
-3. **Inject memory patterns** (if `reviews.R6_pr_review.memory_inject: true`).
+3. **Inject memory patterns** (if `reviews.phase6_pr_review.memory_inject: true`).
    - Read `.ao/memory/review-patterns/` for patterns relevant to the changed files.
    - Include these patterns as additional review context.
 
 4. **Run multi-specialist review** via `/code-review:code-review`.
 
-   **Specialist selection** (if `reviews.R6_pr_review.auto_select: true`):
+   **Specialist selection** (if `reviews.phase6_pr_review.auto_select: true`):
    - Analyze changed files to determine which specialists are relevant:
      - `security` → auth, validation, crypto, session, token files
      - `quality` → test files, error handling, logging
@@ -487,27 +439,27 @@ Feature: <feature-name>
    If specialists produce contradictory findings, post BOTH and note the contradiction:
    ```
    🤖 [ao-review/note] Contradictory findings between security and quality specialists.
-   Both comments preserved — will resolve in R7.
+   Both comments preserved — will resolve in Phase 7.
    ```
 
 6. **Determine review result:**
-   - If zero findings → APPROVE and proceed to R8.
-   - If findings exist → proceed to R7 (fix loop).
+   - If zero findings → APPROVE and proceed to Phase 8.
+   - If findings exist → proceed to Phase 7 (fix loop).
 
 **Output:** PR created with review comments.
 
 ---
 
-### R7: Fix Loop (修正ループ — approve まで)
+### Phase 7: Fix Loop (修正ループ — approve まで)
 
-**Input:** PR with review findings from R6.
+**Input:** PR with review findings from Phase 6.
 
 **Skills to invoke:**
 - `/superpowers:receiving-code-review` — process review feedback
 
 **Configuration:**
-- `reviews.R7_fix_loop.max_iterations` — safety cap (default: 10)
-- `reviews.R7_fix_loop.escalation_trigger.count` — same-issue repeat limit (default: 3)
+- `reviews.phase7_fix_loop.max_iterations` — safety cap (default: 10)
+- `reviews.phase7_fix_loop.escalation_trigger.count` — same-issue repeat limit (default: 3)
 
 **Loop:**
 
@@ -537,7 +489,7 @@ WHILE findings exist AND iteration < max_iterations:
 3. **Quality gates stuck:** Quality gates fail `quality_gates.max_retries` times in a row within a single iteration.
 
 **On escalation:**
-- Block execution (do not continue to R8).
+- Block execution (do not continue to Phase 8).
 - Post a detailed GH comment on the PR explaining the situation:
 
   ```
@@ -555,7 +507,7 @@ WHILE findings exist AND iteration < max_iterations:
 - Print to terminal:
 
   ```
-  ⛔ ESCALATION: R7 fix loop requires human intervention.
+  ⛔ ESCALATION: Phase 7 fix loop requires human intervention.
   Reason: <reason>
   See PR comment for details: <PR URL>
   ```
@@ -564,7 +516,7 @@ WHILE findings exist AND iteration < max_iterations:
 
 ---
 
-### R8: Pre-Merge Review (マージ前レビュー)
+### Phase 8: Pre-Merge Review (マージ前レビュー)
 
 **Input:** Approved PR (all findings resolved).
 
@@ -572,7 +524,7 @@ WHILE findings exist AND iteration < max_iterations:
 
 #### `full-auto`
 
-- **Skip R8 entirely.**
+- **Skip Phase 8 entirely.**
 - Proceed directly to merge.
 
 #### `approve-only`
@@ -582,7 +534,7 @@ WHILE findings exist AND iteration < max_iterations:
 
   ```
   ───────────────────────────────
-  [███████████████░░] R8 — マージ前承認待ち
+  [███████████████░░] Phase 8 — マージ前承認待ち
   PR: <PR URL>
   Waiting for human approval...
   ───────────────────────────────
@@ -597,7 +549,7 @@ WHILE findings exist AND iteration < max_iterations:
 
   ```
   ───────────────────────────────
-  [███████████████░░] R8 — 人間レビュー + 承認待ち
+  [███████████████░░] Phase 8 — 人間レビュー + 承認待ち
   PR: <PR URL>
   Please review the code and approve when ready.
   ───────────────────────────────
@@ -610,7 +562,7 @@ WHILE findings exist AND iteration < max_iterations:
   3. Apply fixes if requested.
   4. Re-request approval after fixes.
 
-**After R8 approval (or skip):**
+**After Phase 8 approval (or skip):**
 
 1. **Invoke `/superpowers:finishing-a-development-branch`.**
 
@@ -653,11 +605,10 @@ autonomous resolution is impossible or unsafe.
 
 | Trigger | Condition | Phase |
 |---------|-----------|-------|
-| R7 max iterations | `iteration >= reviews.R7_fix_loop.max_iterations` | R7 |
-| Same issue repeated | Same finding × `escalation_trigger.count` consecutive times | R7 |
-| Self-review stuck | 3 consecutive FAIL verdicts in R4.5 | R4.5 |
-| Merge conflict | Conflict not auto-resolvable | R5 |
-| Quality gates stuck | Fails `quality_gates.max_retries` times consecutively | R4, R5, R7 |
+| Phase 7 max iterations | `iteration >= reviews.phase7_fix_loop.max_iterations` | Phase 7 |
+| Same issue repeated | Same finding × `escalation_trigger.count` consecutive times | Phase 7 |
+| Merge conflict | Conflict not auto-resolvable | Phase 4 |
+| Quality gates stuck | Fails `quality_gates.max_retries` times consecutively | Phase 3, Phase 4, Phase 7 |
 | Task parse error | `tasks.md` cannot be parsed | Phase 1 |
 
 ### Escalation Behavior
@@ -775,8 +726,8 @@ Memory is how AO learns. Every human correction makes the next run better.
 
 | Event | Action | Target |
 |-------|--------|--------|
-| R8 human feedback | Extract patterns from feedback | `.ao/memory/review-patterns/<category>.md` |
-| R7 recurring fix pattern | Record the pattern | `.ao/memory/review-patterns/<category>.md` |
+| Phase 8 human feedback | Extract patterns from feedback | `.ao/memory/review-patterns/<category>.md` |
+| Phase 7 recurring fix pattern | Record the pattern | `.ao/memory/review-patterns/<category>.md` |
 | Human GH comment correction | Capture the correction | `.ao/memory/review-patterns/<category>.md` |
 | Architectural decision made | Record the decision | `.ao/memory/project-context/architecture.md` |
 | Convention learned | Record the convention | `.ao/memory/project-context/conventions.md` |
@@ -787,7 +738,7 @@ Append to the appropriate file:
 
 ```markdown
 ### <pattern-title>
-- **Source:** R8 feedback / GH comment / R7 fix
+- **Source:** Phase 8 feedback / GH comment / Phase 7 fix
 - **Date:** <date>
 - **Pattern:** <what to watch for>
 - **Rule:** <what to do about it>
@@ -796,9 +747,9 @@ Append to the appropriate file:
 
 ### Memory Injection Points
 
-- **Phase 1.5:** Inject relevant patterns into `ReviewFocusBrief` for each task.
-- **R6:** Inject relevant patterns when running `/code-review:code-review`.
-- **R7:** Reference patterns when analyzing findings to avoid repeating known issues.
+- **Phase 2:** Inject relevant patterns into `ReviewFocusBrief` for each task.
+- **Phase 6:** Inject relevant patterns when running `/code-review:code-review`.
+- **Phase 7:** Reference patterns when analyzing findings to avoid repeating known issues.
 
 ### Memory Write Rules
 
@@ -834,7 +785,7 @@ documented here for reference.
 |-------|------|---------|
 | Git Worktrees | `/superpowers:using-git-worktrees` | Create worktree per task |
 
-### R4: Implementation
+### Phase 3: Implementation
 
 | Skill | Path | Purpose |
 |-------|------|---------|
@@ -844,28 +795,28 @@ documented here for reference.
 | Debugging | `/superpowers:systematic-debugging` | When implementer hits a wall |
 | Git Worktrees | `/superpowers:using-git-worktrees` | Worktree operations |
 
-### R5: Integration
+### Phase 4: Integration
 
 | Skill | Path | Purpose |
 |-------|------|---------|
 | Verification | `/superpowers:verification-before-completion` | Verify acceptance criteria |
 | Simplify | `/simplify` | Reduce complexity post-merge |
 
-### R6: Review
+### Phase 6: Review
 
 | Skill | Path | Purpose |
 |-------|------|---------|
 | Code Review | `/code-review:code-review` | Multi-specialist review |
 | Requesting Review | `/superpowers:requesting-code-review` | Prepare PR for review |
 
-### R7: Fix Loop
+### Phase 7: Fix Loop
 
 | Skill | Path | Purpose |
 |-------|------|---------|
 | Receiving Review | `/superpowers:receiving-code-review` | Process and apply feedback |
 | Simplify | `/simplify` | Auto-simplify between fix iterations |
 
-### R8 + Merge
+### Phase 8 + Merge
 
 | Skill | Path | Purpose |
 |-------|------|---------|
@@ -907,7 +858,7 @@ Before starting any phase, read and internalize the steering documents.
 - Directory structure, module boundaries.
 - Where new files should be placed.
 - Import conventions, barrel files, etc.
-- Use this for Phase 1.5 context generation.
+- Use this for Phase 2 context generation.
 
 **These documents override any assumptions.** If steering says "use Zod for validation"
 and memory says "use Joi", steering wins. Steering is human-authored intent; memory is
@@ -936,10 +887,10 @@ quality_gates:
 
 | Phase | Gates Run | On Failure |
 |-------|-----------|------------|
-| R4 (per task) | All 4 | Fix + retry (max_retries) |
-| R5 (integration) | All 4 | Fix + retry (max_retries) |
-| R7 (per iteration) | All 4 | Fix + retry (max_retries) |
-| R8 (pre-merge) | All 4 | Block merge |
+| Phase 3 (per task) | All 4 | Fix + retry (max_retries) |
+| Phase 4 (integration) | All 4 | Fix + retry (max_retries) |
+| Phase 7 (per iteration) | All 4 | Fix + retry (max_retries) |
+| Phase 8 (pre-merge) | All 4 | Block merge |
 
 ### Failure Handling
 
@@ -1030,7 +981,7 @@ When dispatching Team Agents for parallel implementation:
 1. **Worktree isolation:** Each agent works in its own worktree. No shared mutable state.
 2. **Memory is read-only** for implementers. Only orchestrator writes memory.
 3. **No cross-worktree file access.** Agents stay in their assigned worktree.
-4. **Quality gates are per-worktree** in R4, then per-integration in R5.
+4. **Quality gates are per-worktree** in Phase 3, then per-integration in Phase 4.
 5. **If an agent fails,** it does not affect other agents. Mark the task as failed and continue.
    After all parallel tasks complete, assess which failed and determine if escalation is needed.
 
@@ -1052,13 +1003,13 @@ Phase 1:
   □ Create integration branch
   □ Display checkpoint
 
-Phase 1.5:
+Phase 2:
   □ Generate TaskContextBrief for each task
   □ Generate ReviewFocusBrief for each task
   □ Place context files in worktrees
   □ Display checkpoint
 
-R4:
+Phase 3:
   □ Dispatch parallel agents with /superpowers:dispatching-parallel-agents
   □ Each agent follows /feature-dev:feature-dev
   □ Each agent follows /superpowers:test-driven-development (Red → Green → Refactor)
@@ -1067,14 +1018,7 @@ R4:
   □ Handle sequential tasks after parallel completion
   □ Display checkpoint with per-task status
 
-R4.5:
-  □ Generate Review Focus Brief (categorize changes, focus points)
-  □ Invoke reviewer in Code Review mode
-  □ Process verdict (PASS/FAIL/ESCALATE)
-  □ Fix issues if FAIL (max 3 rounds)
-  □ Display checkpoint
-
-R5:
+Phase 4:
   □ Enter integration worktree
   □ Merge task branches sequentially
   □ Handle merge conflicts (auto-resolve or escalate)
@@ -1084,13 +1028,13 @@ R5:
   □ Re-run quality gates after simplify
   □ Display checkpoint
 
-R5.5 (if not full-auto):
+Phase 5 (if not full-auto):
   □ Display Ship-Before Checkpoint
   □ Wait for human approval
   □ Process human response (proceed/verify/revise)
   □ Display checkpoint
 
-R6:
+Phase 6:
   □ Run /simplify (required: before_pr_review)
   □ Create PR with gh pr create
   □ Inject memory patterns for review
@@ -1098,7 +1042,7 @@ R6:
   □ Post review findings as GH comments (🤖 [ao-review/<specialist>])
   □ Display checkpoint
 
-R7 (if findings exist):
+Phase 7 (if findings exist):
   □ Read unresolved review comments
   □ Fix each finding
   □ Post fix reports (🤖 [ao-fix])
@@ -1110,7 +1054,7 @@ R7 (if findings exist):
   □ Loop until approved or escalated
   □ Display checkpoint
 
-R8:
+Phase 8:
   □ Check autonomy.downstream setting
   □ full-auto → skip to merge
   □ approve-only → wait for human approval

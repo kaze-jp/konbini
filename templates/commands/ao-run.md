@@ -32,26 +32,27 @@ Launch the Agent Orchestrator for fully autonomous feature development. The orch
 4. **Launch the orchestrator agent** (`orchestrator.md`) with the feature name. The orchestrator autonomously executes the full pipeline:
 
    ```
-   Phase 1:   Task analysis + worktree branch creation
-   Phase 1.5: Context generation for implementation workers
-   R4:        Parallel implementation (TDD + Team Agents + quality gates)
-   R5:        Integration (merge worktrees) + Simplify
-   R6:        PR creation + Multi-specialist code review (GH comments)
-   R7:        Fix loop (address review feedback until approved)
-   R8:        Pre-merge review (human/ai per downstream setting)
-   Merge:     Merge to base branch + cleanup
+   Phase 1: Task analysis + worktree branch creation
+   Phase 2: Context generation for implementation workers
+   Phase 3: Parallel implementation (TDD + Team Agents + quality gates)
+   Phase 4: Integration (merge worktrees) + Simplify
+   Phase 5: Ship-Before Checkpoint
+   Phase 6: PR creation + Multi-specialist code review (GH comments)
+   Phase 7: Fix loop (address review feedback until approved)
+   Phase 8: Pre-merge review (human/ai per downstream setting)
+   Merge:   Merge to base branch + cleanup
    ```
 
 5. **Downstream behavior** (determined by `autonomy.downstream`):
 
-   | Setting | R4-R7 | R8 | Merge |
-   |---------|-------|----|-------|
+   | Setting | Phase 3-7 | Phase 8 | Merge |
+   |---------|-----------|---------|-------|
    | `full-auto` | AI autonomous | Skip | Auto |
    | `approve-only` | AI autonomous | Human approval | Auto after approval |
    | `review-and-approve` | AI autonomous | Human review + approval | Auto after approval |
 
 6. **Escalation**: The orchestrator will pause and ask for human help when:
-   - R7 fix loop hits `max_iterations` (default: 10)
+   - Phase 7 fix loop hits `max_iterations` (default: 10)
    - Same review issue repeats 3+ times
    - Merge conflicts cannot be auto-resolved
    - Quality gates fail after `max_retries` (default: 3)
@@ -72,5 +73,5 @@ The orchestrator produces:
 
 - The orchestrator controls the full git workflow (branch, commit, push, PR, merge) as defined in `ao.yaml`.
 - For `solo-full-auto`, the entire pipeline runs without human intervention after this command.
-- For `approve-only` and `team`, the orchestrator pauses at R8 for human approval.
+- For `approve-only` and `team`, the orchestrator pauses at Phase 8 for human approval.
 - Large features benefit from `/kiro:ao-run`; small features may be faster with `/kiro:spec-impl`.

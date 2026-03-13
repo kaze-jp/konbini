@@ -1,6 +1,6 @@
 {
   "name": "@kaze-jp/konbini",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "AI autonomous development framework inspired by cc-sdd. Spec-Driven Development with Agent Orchestrator.",
   "keywords": [
     "claude-code",

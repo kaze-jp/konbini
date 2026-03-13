@@ -11,7 +11,7 @@ const REQUIRED_TEMPLATES = [
 ];
 
 const REQUIRED_KEYWORDS: Record<string, string[]> = {
-  'agents/orchestrator.md': ['Phase 1', 'Phase 1.5', 'R4', 'R5', 'R6', 'R7', 'R8', 'escalation', 'ao.yaml'],
+  'agents/orchestrator.md': ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4', 'Phase 5', 'Phase 6', 'Phase 7', 'Phase 8', 'escalation', 'ao.yaml'],
   'agents/implementer.md': ['TDD', 'Red', 'Green', 'Refactor', 'worktree', 'TaskUpdate'],
   'agents/reviewer.md': ['security', 'quality', 'frontend', 'backend', 'memory', 'ao-review'],
   'config/ao.yaml.template': ['{{PRESET}}', '{{DOWNSTREAM}}', 'schema_version'],
