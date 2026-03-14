@@ -917,19 +917,19 @@ FOR EACH quality gate failure:
 ```
 <project>/                          # main worktree (base branch)
 ├── .git/
+├── .claude/
+│   └── worktrees/                  # worktree directory (.gitignore済み)
+│       ├── <feature>-task-1/
+│       ├── <feature>-task-2/
+│       ├── <feature>-task-3/
+│       └── <feature>-integration/
 └── ...
-
-../<project>-konbini-worktrees/     # worktree directory
-├── <feature>-task-1/               # task 1 worktree
-├── <feature>-task-2/               # task 2 worktree
-├── <feature>-task-3/               # task 3 worktree
-└── <feature>-integration/          # integration worktree
 ```
 
 Worktree creation:
 
 ```bash
-git worktree add ../<project>-konbini-worktrees/<feature>-task-<N> \
+git worktree add .claude/worktrees/<feature>-task-<N> \
   -b <branch_prefix><feature>-task-<N> <git.base_branch>
 ```
 

@@ -57,9 +57,10 @@ Begin implementing approved tasks using TDD in an isolated worktree. This is the
    - If a task cannot be completed as designed, document the blocker
    - Do not proceed with dependent tasks until blockers are resolved
 
-8. **On completion**, use `/superpowers:finishing-a-development-branch` to:
+8. **On completion**, invoke `/superpowers:finishing-a-development-branch`:
    - Verify all tests pass
-   - Choose: merge locally, create PR, keep branch, or discard
+   - Proceed with the appropriate action (merge locally, create PR, keep branch, or discard)
+   - Do NOT stop to ask the user — follow the skill's flow to completion
 
 ## Output
 
