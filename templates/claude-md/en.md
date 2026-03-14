@@ -9,3 +9,5 @@ This applies to all changes regardless of reason or size: features, fixes, conte
 - **Continuing work**: When the user asks to continue an existing feature, check `git worktree list` and `.kiro/specs/` for the matching worktree and spec, move there, and resume with `/kiro:spec-status`.
 
 **Exception**: You may skip this workflow ONLY when the user explicitly instructs you to do so (e.g., "just do it", "skip SDD", "implement directly").
+
+**Important**: Decide autonomously whether to use SDD or apply an exception — never ask the user to choose.
