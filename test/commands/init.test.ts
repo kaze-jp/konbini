@@ -23,6 +23,143 @@ vi.mock('../../src/generators/claude-md-injector.js', () => ({
 
 import { copyTemplates } from '../../src/generators/template-copier.js';
 import { buildInitConfig } from '../../src/generators/preset-resolver.js';
+import { parseInitFlags } from '../../src/commands/init.js';
+
+describe('parseInitFlags', () => {
+  it('returns defaults for empty args', () => {
+    const flags = parseInitFlags([]);
+    expect(flags).toEqual({ yes: false });
+  });
+
+  it('parses --yes flag', () => {
+    const flags = parseInitFlags(['--yes']);
+    expect(flags.yes).toBe(true);
+  });
+
+  it('parses -y shorthand', () => {
+    const flags = parseInitFlags(['-y']);
+    expect(flags.yes).toBe(true);
+  });
+
+  it('parses --preset with value', () => {
+    const flags = parseInitFlags(['--preset', 'solo']);
+    expect(flags.preset).toBe('solo');
+  });
+
+  it('parses --branch with value', () => {
+    const flags = parseInitFlags(['--branch', 'develop']);
+    expect(flags.branch).toBe('develop');
+  });
+
+  it('parses --lang with value', () => {
+    const flags = parseInitFlags(['--lang', 'ja']);
+    expect(flags.lang).toBe('ja');
+  });
+
+  it('parses --claude-md-path with value', () => {
+    const flags = parseInitFlags(['--claude-md-path', 'docs/CLAUDE.md']);
+    expect(flags.claudeMdPath).toBe('docs/CLAUDE.md');
+  });
+
+  it('parses all flags combined', () => {
+    const flags = parseInitFlags([
+      '--yes', '--preset', 'team', '--branch', 'main', '--lang', 'en', '--claude-md-path', 'CLAUDE.md',
+    ]);
+    expect(flags).toEqual({
+      yes: true,
+      preset: 'team',
+      branch: 'main',
+      lang: 'en',
+      claudeMdPath: 'CLAUDE.md',
+    });
+  });
+
+  it('ignores unknown flags', () => {
+    const flags = parseInitFlags(['--unknown', 'value', '--yes']);
+    expect(flags.yes).toBe(true);
+    expect((flags as any).unknown).toBeUndefined();
+  });
+});
+
+describe('runInit — non-interactive flags', () => {
+  let tmpDir: string;
+  let mockPrompter: { ask: ReturnType<typeof vi.fn>; close: ReturnType<typeof vi.fn> };
+  let exitSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'konbini-init-'));
+    fs.mkdirSync(path.join(tmpDir, '.git'), { recursive: true });
+    mockPrompter = {
+      ask: vi.fn().mockResolvedValue(''),
+      close: vi.fn(),
+    };
+    exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('process.exit');
+    }) as any);
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true });
+    exitSpy.mockRestore();
+  });
+
+  it('--yes skips all prompts', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--yes'], mockPrompter, tmpDir);
+    expect(mockPrompter.ask).not.toHaveBeenCalled();
+  });
+
+  it('--preset solo skips preset prompt but prompts for branch and lang', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--preset', 'solo'], mockPrompter, tmpDir);
+    const questions = mockPrompter.ask.mock.calls.map((c: string[]) => c[0]);
+    expect(questions.some((q: string) => q.includes('Base branch'))).toBe(true);
+    expect(questions.some((q: string) => q.includes('Select preset'))).toBe(false);
+    expect(questions.some((q: string) => q.includes('Select language'))).toBe(true);
+  });
+
+  it('--preset invalid exits with code 1', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await expect(
+      runInitWithPrompter(['--preset', 'invalid', '--yes'], mockPrompter, tmpDir)
+    ).rejects.toThrow('process.exit');
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('--lang invalid exits with code 1', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await expect(
+      runInitWithPrompter(['--lang', 'fr', '--yes'], mockPrompter, tmpDir)
+    ).rejects.toThrow('process.exit');
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('--preset custom --yes uses default custom settings without prompting', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--preset', 'custom', '--yes'], mockPrompter, tmpDir);
+    expect(mockPrompter.ask).not.toHaveBeenCalled();
+  });
+
+  it('--preset custom without --yes prompts for custom settings', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--preset', 'custom'], mockPrompter, tmpDir);
+    const questions = mockPrompter.ask.mock.calls.map((c: string[]) => c[0]);
+    expect(questions.some((q: string) => q.includes('downstream'))).toBe(true);
+  });
+
+  it('--branch "" falls back to auto-detected branch', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter(['--branch', '', '--yes'], mockPrompter, tmpDir);
+    expect(mockPrompter.ask).not.toHaveBeenCalled();
+  });
+
+  it('no flags preserves full interactive behavior', async () => {
+    const { runInitWithPrompter } = await import('../../src/commands/init.js');
+    await runInitWithPrompter([], mockPrompter, tmpDir);
+    // Should prompt for branch, preset, lang, and path (at least 4 calls)
+    expect(mockPrompter.ask.mock.calls.length).toBeGreaterThanOrEqual(4);
+  });
+});
 
 describe('init — copyTemplates', () => {
   let tmpDir: string;

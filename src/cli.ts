@@ -32,10 +32,21 @@ const HELP = `
   konbini — AI autonomous development framework
 
   Usage:
-    npx konbini init              Initialize konbini in current project
+    npx konbini init [options]    Initialize konbini in current project
     npx konbini update            Update templates (preserves config & memory)
     npx konbini memory simplify   Consolidate learned review patterns
     npx konbini config show       Show current configuration
+
+  Init options:
+    --yes, -y                     Skip all prompts, use defaults
+    --preset <name>               Preset (solo, solo-full-auto, team, custom)
+    --branch <name>               Base branch name
+    --lang <en|ja>                CLAUDE.md language
+    --claude-md-path <path>       CLAUDE.md file path
+
+  Examples:
+    npx konbini init --yes                          Non-interactive with defaults
+    npx konbini init --preset solo --branch main -y Full non-interactive
 
   Inspired by cc-sdd (https://github.com/gotalab/cc-sdd)
 `;
