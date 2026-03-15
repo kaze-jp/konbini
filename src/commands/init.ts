@@ -75,10 +75,10 @@ export async function askBaseBranch(prompter: Prompter): Promise<string> {
 // --- Step 2: Preset selection ---
 export async function askPreset(prompter: Prompter): Promise<string> {
   log.header('Preset Selection');
-  log.info('  1) solo           — 上流承認 + 下流は approve-only（推奨）');
-  log.info('  2) solo-full-auto — 上流承認後は完全自律');
-  log.info('  3) team           — 上流承認 + 下流は review-and-approve');
-  log.info('  4) custom         — 個別に設定');
+  log.info('  1) solo           — human approves upstream, approve-only downstream (recommended)');
+  log.info('  2) solo-full-auto — human approves upstream, fully autonomous downstream');
+  log.info('  3) team           — human approves upstream, review-and-approve downstream');
+  log.info('  4) custom         — configure individually');
   const answer = await prompter.ask('\n  Select preset [1]: ');
 
   const map: Record<string, string> = {
@@ -137,7 +137,7 @@ export async function initProject(projectRoot: string, config: InitConfig, claud
     if (tool.available) {
       log.success(`${tool.name} ${tool.version ?? ''}`);
     } else {
-      log.error(`${tool.name} が見つかりません`);
+      log.error(`${tool.name} not found`);
     }
   }
 
@@ -178,10 +178,19 @@ export async function initProject(projectRoot: string, config: InitConfig, claud
     fs.writeFileSync(aoYamlPath, aoContent);
   }
 
-  log.success(`konbini initialized with preset: ${config.preset}`);
-  log.info(`  base branch: ${config.baseBranch}`);
+  log.success(`konbini initialized! (preset: ${config.preset}, branch: ${config.baseBranch})`);
   log.info('');
-  log.info('Next: Claude Code で /kiro:spec-init <feature> を実行してください');
+  log.header('Get started');
+  log.info('Open Claude Code and ask:');
+  log.info('');
+  log.info('  "Read https://github.com/kaze-jp/konbini and help me get started."');
+  log.info('');
+  log.info('Or jump right in:');
+  log.info('  /kiro:spec-init <feature-name>');
+  log.info('');
+  log.info('─'.repeat(40));
+  log.info('If konbini is useful, please ⭐ the repo:');
+  log.info('  https://github.com/kaze-jp/konbini');
 }
 
 // --- Entry point (testable core) ---

@@ -23,11 +23,11 @@ export function checkPreCommitHooks(projectRoot: string): HooksCheckResult {
 }
 
 export function printHooksRecommendation() {
-  log.header('Pre-commit Hooks (推奨)');
-  log.warn('pre-commit hooks が検出されませんでした。以下の設定を推奨します:');
-  log.info('  • lint-staged — 変更ファイルのみ lint');
-  log.info('  • type-check — 型チェック');
-  log.info('  • test — 関連テストの実行');
+  log.header('Pre-commit Hooks (recommended)');
+  log.warn('No pre-commit hooks detected. Consider adding:');
+  log.info('  • lint-staged — lint changed files only');
+  log.info('  • type-check — type checking');
+  log.info('  • test — run related tests');
   log.info('');
-  log.warn('git commit --no-verify は使用しないことを強く推奨します。');
+  log.warn('Strongly recommended: do not use git commit --no-verify.');
 }

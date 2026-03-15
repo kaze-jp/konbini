@@ -4,9 +4,9 @@ import os from 'os';
 import { log } from '../utils/logger.js';
 
 const REQUIRED_PLUGINS = [
-  { name: 'feature-dev', purpose: '実装ガイド' },
-  { name: 'code-review', purpose: 'PRレビュー' },
-  { name: 'superpowers', purpose: 'simplify, brainstorming, TDD等' },
+  { name: 'feature-dev', purpose: 'implementation guide' },
+  { name: 'code-review', purpose: 'PR review' },
+  { name: 'superpowers', purpose: 'simplify, brainstorming, TDD' },
 ] as const;
 
 export interface PluginCheckResult {
@@ -43,13 +43,13 @@ export function printPluginStatus(results: PluginCheckResult[]) {
     if (p.available) {
       log.success(`${p.name} (installed)`);
     } else {
-      log.error(`${p.name} — 未インストール`);
+      log.error(`${p.name} — not installed`);
       missing.push(p);
     }
   }
   if (missing.length > 0) {
     log.info('');
-    log.warn('Claude Code で以下を実行してください:');
+    log.warn('Run the following in Claude Code:');
     for (const p of missing) {
       log.info(`  /install-plugin ${p.name}`);
     }

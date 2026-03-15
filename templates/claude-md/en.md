@@ -1,6 +1,7 @@
 ## SDD Enforcement Rules (CRITICAL)
 
 This project uses **konbini** (v{{VERSION}}) for Spec-Driven Development (SDD).
+Documentation: https://github.com/kaze-jp/konbini
 
 When you need to modify any code file, **you must NOT write code directly**.
 This applies to all changes regardless of reason or size: features, fixes, content updates, config changes, even a one-line edit.

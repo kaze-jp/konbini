@@ -1,39 +1,53 @@
 # konbini
 
-AI autonomous development framework inspired by [cc-sdd](https://github.com/gotalab/cc-sdd).
+**AI autonomous development framework** — Humans approve specs and design. AI handles everything from implementation to merge.
 
-**Spec-Driven Development + Agent Orchestrator** — 人間は上流（仕様・設計・タスク分解）を承認するだけ。実装からマージまでをAIが自律的に完結させる。
+Spec-Driven Development (SDD) with an Agent Orchestrator, built for [Claude Code](https://claude.com/claude-code). Inspired by [cc-sdd](https://github.com/gotalab/cc-sdd).
+
+## Why konbini?
+
+Traditional AI-assisted coding still requires you to write code, review diffs, and manage branches manually. konbini flips this:
+
+1. **You** define *what* to build (requirements, design, task breakdown)
+2. **AI** handles *how* — implementation, testing, PRs, code review, and merge
+
+Zero runtime dependencies. One command to set up. Works with any project.
 
 ## Quick Start
 
 ```bash
-npx konbini init
+npx @kaze-jp/konbini init
 ```
 
-プリセットを選択:
-1. **solo** — 上流承認 + 下流は approve-only（推奨）
-2. **solo-full-auto** — 上流承認後は完全自律
-3. **team** — 上流承認 + 下流は review-and-approve
+Then open Claude Code and say:
+
+> "Read https://github.com/kaze-jp/konbini and help me get started."
+
+Claude will understand your project's configuration and guide you through the workflow.
+
+Or jump right in:
+
+```
+/kiro:spec-init add-user-auth
+```
 
 ## Prerequisites
 
-### Required Tools
-
 | Tool | Purpose | Install |
 |------|---------|---------|
-| [Claude Code](https://claude.com/claude-code) | AI development environment | `npm i -g @anthropic-ai/claude-code` |
-| [gh CLI](https://cli.github.com/) | GitHub operations (PR, review) | `brew install gh` |
-| Git | Version control (worktree support) | OS standard |
+| [Claude Code](https://claude.com/claude-code) | AI development environment (Pro/Max plan required) | `npm i -g @anthropic-ai/claude-code` |
+| [gh CLI](https://cli.github.com/) | GitHub operations (PRs, reviews) | `brew install gh` → `gh auth login` |
+| Git | Version control (worktree support) | Included with most OS |
 
-### Required Claude Code Plugins
+### Recommended Claude Code Plugins
 
-| Plugin | Purpose |
-|--------|---------|
-| [feature-dev](https://github.com/anthropics/claude-code-plugins) | Implementation guide |
-| [code-review](https://github.com/anthropics/claude-code-plugins) | PR review |
-| [superpowers](https://github.com/anthropics/claude-code-plugins) | TDD, brainstorming, simplify |
+| Plugin | Purpose | Install |
+|--------|---------|---------|
+| [superpowers](https://github.com/anthropics/claude-code-plugins) | TDD, brainstorming, planning | `/install-plugin superpowers` in Claude Code |
+| [feature-dev](https://github.com/anthropics/claude-code-plugins) | Guided feature implementation | `/install-plugin feature-dev` in Claude Code |
+| [code-review](https://github.com/anthropics/claude-code-plugins) | Multi-specialist PR review | `/install-plugin code-review` in Claude Code |
 
-## Workflow
+## How It Works
 
 ```
 ┌──────────────────────────────────────────────────┐
@@ -42,9 +56,9 @@ npx konbini init
 │  R1: Requirements (EARS format)                  │
 │  R2: Technical Design                            │
 │  R3: Task Breakdown (parallel analysis)          │
-│                    ↓ Approved                     │
+│                    ↓ Approved                    │
 ├──────────────────────────────────────────────────┤
-│  Downstream (AO autonomous execution)            │
+│  Downstream (AI autonomous execution)            │
 │                                                  │
 │  Phase 1:   Task analysis + branch creation      │
 │  Phase 1.5: Context generation for workers       │
@@ -59,10 +73,18 @@ npx konbini init
 
 ## Configuration
 
-All configuration lives in `.ao/ao.yaml`. Key settings:
+`npx @kaze-jp/konbini init` creates the following presets:
+
+| Preset | Description | R8 (Pre-merge) | Merge |
+|--------|-------------|----------------|-------|
+| `solo` (default) | Human approves upstream, approve-only downstream | Human approval | Auto after approval |
+| `solo-full-auto` | Human approves upstream, fully autonomous downstream | Skip | Auto |
+| `team` | Human approves upstream, review-and-approve downstream | Human review + approval | Auto after approval |
+
+All configuration lives in `.ao/ao.yaml`:
 
 ```yaml
-preset: solo                    # solo | solo-full-auto | team
+preset: solo
 autonomy:
   downstream: approve-only      # full-auto | approve-only | review-and-approve
 git:
@@ -72,13 +94,27 @@ tdd:
   enabled: true                 # TDD mandatory (Red → Green → Refactor)
 ```
 
-### Presets
+## Commands
 
-| Preset | R8 (Pre-merge) | Merge |
-|--------|----------------|-------|
-| `solo` | Human approval | Auto after approval |
-| `solo-full-auto` | Skip | Auto |
-| `team` | Human review + approval | Auto after approval |
+### CLI
+
+```bash
+npx @kaze-jp/konbini init              # Initialize in current project
+npx @kaze-jp/konbini update            # Update templates (preserves config & memory)
+npx @kaze-jp/konbini memory simplify   # Consolidate review patterns
+npx @kaze-jp/konbini config show       # Show configuration
+```
+
+### Claude Code Slash Commands (available after init)
+
+```
+/kiro:spec-init <feature>     # Start new feature spec
+/kiro:spec-requirements       # Expand to EARS requirements
+/kiro:spec-design             # Create technical design
+/kiro:spec-tasks              # Generate implementation tasks
+/kiro:ao-run <feature>        # Launch autonomous execution
+/kiro:spec-status             # Check progress
+```
 
 ## Review Breakpoints
 
@@ -93,49 +129,29 @@ tdd:
 | R7 | AI | Fix loop until approve |
 | R8 | Configurable | Pre-merge review |
 
+## Project Structure (generated by init)
+
+```
+your-project/
+├── .claude/
+│   ├── agents/               # AI agent definitions
+│   └── commands/kiro/        # SDD slash commands
+├── .ao/
+│   ├── ao.yaml               # Configuration (single source of truth)
+│   ├── steering/             # Product, tech, structure docs
+│   └── memory/               # Learned review patterns
+└── .kiro/
+    └── settings/
+        ├── rules/            # EARS, design, task rules
+        └── templates/        # Spec templates
+```
+
 ## Learning Loop
 
 konbini accumulates review patterns in `.ao/memory/`:
 - Review findings are saved as patterns
 - Patterns are injected into future reviews
 - Auto-simplify when patterns exceed threshold (default: 20)
-
-## Commands
-
-```bash
-npx konbini init              # Initialize in current project
-npx konbini update            # Update templates (preserves config & memory)
-npx konbini memory simplify   # Consolidate review patterns
-npx konbini config show       # Show configuration
-```
-
-### Claude Code Commands (after init)
-
-```
-/kiro:spec-init <feature>     # Start new feature spec
-/kiro:spec-requirements       # Expand to EARS requirements
-/kiro:spec-design             # Create technical design
-/kiro:spec-tasks              # Generate implementation tasks
-/kiro:ao-run <feature>        # Launch autonomous execution
-/kiro:spec-status             # Check progress
-```
-
-## Project Structure (generated)
-
-```
-your-project/
-├── .claude/
-│   ├── agents/               # AI agent definitions
-│   └── commands/kiro/        # SDD commands
-├── .ao/
-│   ├── ao.yaml               # Configuration (single source of truth)
-│   ├── steering/             # Product, tech, structure docs
-│   └── memory/               # Learned patterns
-└── .kiro/
-    └── settings/
-        ├── rules/            # EARS, design, task rules
-        └── templates/        # Spec templates
-```
 
 ## Credits
 
@@ -145,3 +161,7 @@ your-project/
 ## License
 
 MIT
+
+---
+
+If konbini is useful to you, please consider giving it a ⭐ on GitHub — it helps others discover the project!
