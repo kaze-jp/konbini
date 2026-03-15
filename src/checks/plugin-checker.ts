@@ -49,9 +49,9 @@ export function printPluginStatus(results: PluginCheckResult[]) {
   }
   if (missing.length > 0) {
     log.info('');
-    log.warn('Run the following in Claude Code:');
+    log.warn('Run the following in your terminal:');
     for (const p of missing) {
-      log.info(`  /install-plugin ${p.name}`);
+      log.info(`  claude plugin install ${p.name}`);
     }
   }
 }

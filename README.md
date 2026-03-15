@@ -47,9 +47,9 @@ Or jump right in:
 
 | Plugin | Purpose | Install |
 |--------|---------|---------|
-| [superpowers](https://github.com/anthropics/claude-code-plugins) | TDD, brainstorming, planning | `/install-plugin superpowers` in Claude Code |
-| [feature-dev](https://github.com/anthropics/claude-code-plugins) | Guided feature implementation | `/install-plugin feature-dev` in Claude Code |
-| [code-review](https://github.com/anthropics/claude-code-plugins) | Multi-specialist PR review | `/install-plugin code-review` in Claude Code |
+| [superpowers](https://github.com/anthropics/claude-code-plugins) | TDD, brainstorming, planning | `claude plugin install superpowers` |
+| [feature-dev](https://github.com/anthropics/claude-code-plugins) | Guided feature implementation | `claude plugin install feature-dev` |
+| [code-review](https://github.com/anthropics/claude-code-plugins) | Multi-specialist PR review | `claude plugin install code-review` |
 
 ## ⚙️ How It Works
 
