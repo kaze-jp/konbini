@@ -1,5 +1,7 @@
 # konbini
 
+[![GitHub stars](https://img.shields.io/github/stars/kaze-jp/konbini?style=social)](https://github.com/kaze-jp/konbini)
+
 **AI autonomous development framework** — Humans approve specs and design. AI handles everything from implementation to merge.
 
 Spec-Driven Development (SDD) with an Agent Orchestrator, built for [Claude Code](https://claude.com/claude-code). Inspired by [cc-sdd](https://github.com/gotalab/cc-sdd).
@@ -162,6 +164,3 @@ konbini accumulates review patterns in `.ao/memory/`:
 
 MIT
 
----
-
-If konbini is useful to you, please consider giving it a ⭐ on GitHub — it helps others discover the project!
