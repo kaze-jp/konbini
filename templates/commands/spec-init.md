@@ -12,7 +12,9 @@ Initialize a new feature specification directory and generate initial requiremen
 
 0. **Worktree guard** — Before anything else, check if you are working in a git worktree (not on the main/master branch). If you are on the main branch, **stop and create a worktree first** using the `superpowers:using-git-worktrees` skill or `git worktree add`. Do NOT proceed with spec initialization until you are in an isolated worktree.
 
-1. **Read product context** from `.ao/steering/product.md` if it exists. Use this to understand the product vision, target users, and strategic goals.
+1. **Steering check** — Check if `.ao/steering/` directory exists with the core documents (`product.md`, `tech.md`, `structure.md`).
+   - **If `.ao/steering/` does not exist** (first time): Stop and run `/kiro:steering` to establish project context before continuing. This creates the steering documents by analyzing the codebase. Do NOT proceed with spec initialization until steering is complete.
+   - **If `.ao/steering/` exists**: Read all three steering documents (`product.md`, `tech.md`, `structure.md`) to understand the product vision, technology stack, and project structure.
 
 2. **Create the spec directory** at `.kiro/specs/$FEATURE_NAME/`.
 
@@ -69,5 +71,5 @@ Initialize a new feature specification directory and generate initial requiremen
 ## Notes
 
 - Feature names should use kebab-case (e.g., `user-auth`, `payment-flow`).
-- If `.ao/steering/product.md` does not exist, proceed without product context but note the gap.
+- If `.ao/steering/` does not exist, the steering check in step 1 will create it before proceeding.
 - Each requirement should be individually numbered (e.g., FR-001, NFR-001).
