@@ -82,5 +82,5 @@ export async function copyTemplates(
     fs.writeFileSync(aoPath, aoContent);
   }
 
-  log.success('テンプレートを展開しました');
+  log.success('Templates generated');
 }

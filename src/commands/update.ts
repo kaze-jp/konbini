@@ -46,15 +46,15 @@ export async function updateProject(projectRoot: string) {
     const content = fs.readFileSync(aoConfigPath, 'utf-8');
     const config = parseTopLevelYaml(content);
     if (config.schema_version && (config.schema_version as number) < 1) {
-      log.warn('ao.yaml の schema_version が古いです。マイグレーションが必要かもしれません。');
+      log.warn('ao.yaml schema_version is outdated. Migration may be required.');
     }
   }
 
   // カスタマイズ検出（agents）
   const customized = hasCustomizations(getTemplatePath('agents'), paths.agents);
   if (customized.length > 0) {
-    log.warn(`以下のファイルがカスタマイズされています: ${customized.join(', ')}`);
-    log.info('上書きすると変更が失われます。バックアップを推奨します。');
+    log.warn(`Customized files detected: ${customized.join(', ')}`);
+    log.info('These will be overwritten. Back up your changes if needed.');
   }
 
   // テンプレートファイルのみ上書き
@@ -83,7 +83,7 @@ export async function updateProject(projectRoot: string) {
   // .gitignore にworktreeディレクトリを追加
   ensureGitignoreEntries(projectRoot);
 
-  log.info('ao.yaml, memory, steering は保持しました');
+  log.info('ao.yaml, memory, and steering preserved');
   log.success('update complete');
 }
 

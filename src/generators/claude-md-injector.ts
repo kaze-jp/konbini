@@ -84,7 +84,7 @@ function loadTemplate(language: string): string | null {
 export function injectClaudeMd(projectRoot: string, config: ClaudeMdConfig): void {
   const template = loadTemplate(config.language);
   if (!template) {
-    log.error(`CLAUDE.md テンプレートが見つかりません: ${config.language}`);
+    log.error(`CLAUDE.md template not found: ${config.language}`);
     return;
   }
 
@@ -102,9 +102,9 @@ export function injectClaudeMd(projectRoot: string, config: ClaudeMdConfig): voi
 
     const result = injectSection(existing, section);
     fs.writeFileSync(claudeMdPath, result);
-    log.success(`CLAUDE.md にSDDルールを注入しました (${config.language})`);
+    log.success(`SDD rules injected into CLAUDE.md (${config.language})`);
   } catch (e) {
-    log.error(`CLAUDE.md の書き込みに失敗しました: ${e}`);
+    log.error(`Failed to write CLAUDE.md: ${e}`);
   }
 }
 

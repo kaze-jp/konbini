@@ -2,10 +2,10 @@ import { log } from '../utils/logger.js';
 
 export async function runMemorySimplify(_args: string[]) {
   log.header('konbini memory simplify');
-  log.info('Memory simplify は Claude Code セッション内で実行されます。');
+  log.info('Memory simplify runs inside a Claude Code session.');
   log.info('');
-  log.info('Claude Code で以下を実行してください:');
-  log.info('  「.ao/memory/ の review-patterns を整理・統合してください」');
+  log.info('In Claude Code, ask:');
+  log.info('  "Consolidate and simplify the review patterns in .ao/memory/"');
   log.info('');
-  log.info('orchestrator が自動で simplify_threshold (20) に達した際にも実行されます。');
+  log.info('The orchestrator also runs this automatically when simplify_threshold (20) is reached.');
 }
