@@ -87,7 +87,7 @@ Or jump right in:
 | `solo-full-auto` | Human approves upstream, fully autonomous downstream | Skip | Auto |
 | `team` | Human approves upstream, review-and-approve downstream | Human review + approval | Auto after approval |
 
-All configuration lives in `.ao/ao.yaml`:
+All configuration lives in `.ao/ao.yaml`. Key settings:
 
 ```yaml
 preset: solo
@@ -99,6 +99,8 @@ git:
 tdd:
   enabled: true                 # TDD mandatory (Red → Green → Refactor)
 ```
+
+See the full configuration reference in [`templates/config/ao.yaml.template`](templates/config/ao.yaml.template) for all available options including `skills`, `reviews`, `quality_gates`, `dependencies`, and more.
 
 ## 💻 Commands
 
@@ -113,13 +115,26 @@ npx @kaze-jp/konbini config show       # Show configuration
 
 ### ⚡ Claude Code Slash Commands (available after init)
 
+**Core workflow:**
+
 ```
 /kiro:spec-init <feature>     # Start new feature spec
 /kiro:spec-requirements       # Expand to EARS requirements
 /kiro:spec-design             # Create technical design
 /kiro:spec-tasks              # Generate implementation tasks
+/kiro:spec-impl               # Start implementation phase
 /kiro:ao-run <feature>        # Launch autonomous execution
 /kiro:spec-status             # Check progress
+```
+
+**Validation & steering:**
+
+```
+/kiro:validate-design         # Validate technical design
+/kiro:validate-impl           # Validate implementation against spec
+/kiro:validate-gap            # Gap analysis between spec and code
+/kiro:steering                # Manage product/tech context docs
+/kiro:steering-custom         # Add custom steering document
 ```
 
 ## 🔍 Phase Overview
