@@ -16,7 +16,17 @@ Break a technical design into concrete implementation tasks with parallel execut
 
 3. **Read project structure** from `.ao/steering/structure.md` to understand file organization.
 
-4. **Break the design into tasks**. Each task must include:
+4. **Localization** — Determine the output language for the generated document:
+   1. Read `.ao/ao.yaml` and extract the top-level `language` field.
+   2. If not present, fall back to `claude_md.language`.
+   3. If neither exists, default to `en`.
+   4. Read the locale files from `.kiro/settings/locales/{language}/`:
+      - `section-headers.yaml` → use `tasks.*` keys for section headers
+      - `boilerplate.yaml` → use localized status labels and boilerplate text
+   5. If the locale directory does not exist, fall back to `en` and warn: `"Warning: Locale '{lang}' not found. Using English."`
+   6. Apply the localized text when generating the spec document.
+
+5. **Break the design into tasks**. Each task must include:
    - **Task ID**: T-001, T-002, etc.
    - **Title**: Short descriptive name
    - **Description**: What needs to be done
@@ -26,20 +36,20 @@ Break a technical design into concrete implementation tasks with parallel execut
    - **Test requirements**: What tests to write
    - **Estimated effort**: Small (< 1hr), Medium (1-2hr), Large (2-4hr)
 
-5. **Apply task generation rules**:
+6. **Apply task generation rules**:
    - Each task should be 1-4 hours of work maximum
    - Tasks must be independently verifiable
    - No task should modify more than 5 files
    - Shared utilities should be separate tasks that others depend on
    - Test tasks can be bundled with implementation tasks
 
-6. **Perform parallel execution analysis**:
+7. **Perform parallel execution analysis**:
    - For each pair of tasks, check if they modify the same files
    - Tasks that share NO file dependencies can be marked with **(P)**
    - Tasks that share files MUST have explicit ordering via dependencies
    - Document the conflict matrix showing which tasks share files
 
-7. **Generate `tasks.md`** with this structure:
+8. **Generate `tasks.md`** with this structure:
 
 ```markdown
 # Implementation Tasks: <feature-name>
@@ -84,7 +94,7 @@ Break a technical design into concrete implementation tasks with parallel execut
 | FR-001 | T-001, T-003 |
 ```
 
-8. **Report** the output path and suggest `/kiro:spec-impl` or `/kiro:ao-run` to begin implementation.
+9. **Report** the output path and suggest `/kiro:spec-impl` or `/kiro:ao-run` to begin implementation.
 
 ## Output
 

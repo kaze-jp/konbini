@@ -19,5 +19,6 @@ describe('getTargetPaths', () => {
     expect(paths.steering).toBe('/test/project/.ao/steering');
     expect(paths.rules).toBe('/test/project/.kiro/settings/rules');
     expect(paths.specTemplates).toBe('/test/project/.kiro/settings/templates/specs');
+    expect(paths.locales).toBe('/test/project/.kiro/settings/locales');
   });
 });

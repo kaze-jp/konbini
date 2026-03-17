@@ -18,6 +18,7 @@ export interface TargetPaths {
   steering: string;
   rules: string;
   specTemplates: string;
+  locales: string;
 }
 
 export function getTargetPaths(projectRoot: string): TargetPaths {
@@ -32,5 +33,6 @@ export function getTargetPaths(projectRoot: string): TargetPaths {
     steering: path.join(projectRoot, '.ao', 'steering'),
     rules: path.join(projectRoot, '.kiro', 'settings', 'rules'),
     specTemplates: path.join(projectRoot, '.kiro', 'settings', 'templates', 'specs'),
+    locales: path.join(projectRoot, '.kiro', 'settings', 'locales'),
   };
 }

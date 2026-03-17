@@ -1,0 +1,7 @@
+created_by: "Created by `/kiro:spec-init`"
+expanded_from: "Expanded from requirements-init using EARS format"
+generated_from: "Generated from approved design"
+status_draft: "Draft"
+status_awaiting_r1: "⏳ Awaiting R1 approval"
+status_awaiting_r2: "⏳ Awaiting R2 approval"
+status_awaiting_r3: "⏳ Awaiting R3 approval"

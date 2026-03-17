@@ -191,12 +191,13 @@ describe('init — copyTemplates', () => {
     expect(fs.existsSync(path.join(tmpDir, '.claude', 'agents', 'orchestrator.md'))).toBe(true);
   });
 
-  it('leaves claude_md placeholders in ao.yaml for init.ts to resolve', async () => {
+  it('leaves claude_md and language placeholders in ao.yaml for init.ts to resolve', async () => {
     const config = buildInitConfig('solo', { baseBranch: 'main' });
     await copyTemplates(tmpDir, config);
     const aoYaml = fs.readFileSync(path.join(tmpDir, '.ao', 'ao.yaml'), 'utf-8');
     expect(aoYaml).toContain('{{CLAUDE_MD_LANG}}');
     expect(aoYaml).toContain('{{CLAUDE_MD_PATH}}');
+    expect(aoYaml).toContain('{{LANGUAGE}}');
   });
 });
 
@@ -229,6 +230,30 @@ describe('init — initProject', () => {
     await initProject(tmpDir, config, { language: 'ja', path: 'CLAUDE.md' });
     const aoContent = fs.readFileSync(path.join(tmpDir, '.ao', 'ao.yaml'), 'utf-8');
     expect(aoContent).toContain('language: ja');
-    expect(aoContent).not.toContain('language: en');
+  });
+
+  it('writes top-level language field to ao.yaml', async () => {
+    const { initProject } = await import('../../src/commands/init.js');
+    const config = buildInitConfig('solo', { baseBranch: 'main' });
+    await initProject(tmpDir, config, { language: 'ja', path: 'CLAUDE.md' });
+    const aoContent = fs.readFileSync(path.join(tmpDir, '.ao', 'ao.yaml'), 'utf-8');
+    // Top-level language field should be set
+    const lines = aoContent.split('\n');
+    const topLevelLang = lines.find(l => /^language:\s/.test(l));
+    expect(topLevelLang).toBeDefined();
+    expect(topLevelLang).toContain('ja');
+    // Placeholder should be resolved
+    expect(aoContent).not.toContain('{{LANGUAGE}}');
+  });
+
+  it('sets top-level language to en by default', async () => {
+    const { initProject } = await import('../../src/commands/init.js');
+    const config = buildInitConfig('solo', { baseBranch: 'main' });
+    await initProject(tmpDir, config, { language: 'en', path: 'CLAUDE.md' });
+    const aoContent = fs.readFileSync(path.join(tmpDir, '.ao', 'ao.yaml'), 'utf-8');
+    const lines = aoContent.split('\n');
+    const topLevelLang = lines.find(l => /^language:\s/.test(l));
+    expect(topLevelLang).toBeDefined();
+    expect(topLevelLang).toContain('en');
   });
 });

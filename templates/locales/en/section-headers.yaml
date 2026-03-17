@@ -1,0 +1,39 @@
+requirements_init:
+  title: "{{FEATURE_NAME}} — Requirements (Initial)"
+  overview: "Overview"
+  user_stories: "User Stories"
+  functional: "Functional"
+  non_functional: "Non-Functional"
+  open_questions: "Open Questions"
+  next_step: "**Next:** Run `/kiro:spec-requirements` to expand into full EARS-format requirements."
+
+requirements:
+  title: "{{FEATURE_NAME}} — Requirements"
+  subtitle: "Expanded from requirements-init using EARS format"
+  ubiquitous: "Ubiquitous Requirements"
+  event_driven: "Event-Driven Requirements"
+  state_driven: "State-Driven Requirements"
+  optional: "Optional Requirements"
+  unwanted: "Unwanted Behavior Requirements"
+  acceptance_criteria: "Acceptance Criteria"
+  constraints: "Constraints"
+  dependencies: "Dependencies"
+  status_awaiting: "⏳ Awaiting R1 approval"
+  next_step: "After approval, run `/kiro:spec-design` to create technical design."
+
+design:
+  title: "{{FEATURE_NAME}} — Technical Design"
+  architecture_overview: "Architecture Overview"
+  component_design: "Component Design"
+  api_contracts: "API Contracts"
+  data_models: "Data Models"
+  testing_strategy: "Testing Strategy"
+  requirements_traceability: "Requirements Traceability"
+
+tasks:
+  title: "{{FEATURE_NAME}} — Implementation Tasks"
+  parallel_analysis: "Parallel Analysis"
+  tasks: "Tasks"
+  file_conflict_analysis: "File Conflict Analysis"
+  status_awaiting: "⏳ Awaiting R3 approval"
+  next_step: "After approval, run `/kiro:spec-impl` or `/kiro:ao-run` to begin implementation."

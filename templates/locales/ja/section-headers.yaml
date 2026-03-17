@@ -1,0 +1,39 @@
+requirements_init:
+  title: "{{FEATURE_NAME}} — 要件定義（初期）"
+  overview: "概要"
+  user_stories: "ユーザーストーリー"
+  functional: "機能要件"
+  non_functional: "非機能要件"
+  open_questions: "未解決事項"
+  next_step: "**次のステップ:** `/kiro:spec-requirements` を実行して完全なEARS形式の要件に展開してください。"
+
+requirements:
+  title: "{{FEATURE_NAME}} — 要件定義"
+  subtitle: "requirements-init から EARS 形式で展開"
+  ubiquitous: "常時要件"
+  event_driven: "イベント駆動要件"
+  state_driven: "状態駆動要件"
+  optional: "条件付き要件"
+  unwanted: "異常系要件"
+  acceptance_criteria: "受入基準"
+  constraints: "制約"
+  dependencies: "依存関係"
+  status_awaiting: "⏳ R1 承認待ち"
+  next_step: "承認後、`/kiro:spec-design` を実行して技術設計を作成してください。"
+
+design:
+  title: "{{FEATURE_NAME}} — 技術設計"
+  architecture_overview: "アーキテクチャ概要"
+  component_design: "コンポーネント設計"
+  api_contracts: "API コントラクト"
+  data_models: "データモデル"
+  testing_strategy: "テスト戦略"
+  requirements_traceability: "要件トレーサビリティ"
+
+tasks:
+  title: "{{FEATURE_NAME}} — 実装タスク"
+  parallel_analysis: "並列分析"
+  tasks: "タスク"
+  file_conflict_analysis: "ファイル競合分析"
+  status_awaiting: "⏳ R3 承認待ち"
+  next_step: "承認後、`/kiro:spec-impl` または `/kiro:ao-run` を実行して実装を開始してください。"

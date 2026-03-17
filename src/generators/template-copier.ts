@@ -49,6 +49,9 @@ export async function copyTemplates(
   // Spec templates
   copyDir(getTemplatePath('spec-templates'), paths.specTemplates, overwrite);
 
+  // Locales
+  copyDir(getTemplatePath('locales'), paths.locales, overwrite);
+
   // Steering templates
   for (const file of ['product.md.template', 'tech.md.template', 'structure.md.template']) {
     const src = getTemplatePath(`steering/${file}`);

@@ -1,0 +1,7 @@
+created_by: "`/kiro:spec-init` により作成"
+expanded_from: "requirements-init から EARS 形式で展開"
+generated_from: "承認済み設計から生成"
+status_draft: "ドラフト"
+status_awaiting_r1: "⏳ R1 承認待ち"
+status_awaiting_r2: "⏳ R2 承認待ち"
+status_awaiting_r3: "⏳ R3 承認待ち"
