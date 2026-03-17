@@ -17,7 +17,17 @@ Generate a technical design document from approved requirements.
    - `.ao/steering/structure.md` for project structure and file organization
    - `.ao/steering/product.md` for product context
 
-3. **Generate `design.md`** with the following sections:
+3. **Localization** — Determine the output language for the generated document:
+   1. Read `.ao/ao.yaml` and extract the top-level `language` field.
+   2. If not present, fall back to `claude_md.language`.
+   3. If neither exists, default to `en`.
+   4. Read the locale files from `.kiro/settings/locales/{language}/`:
+      - `section-headers.yaml` → use `design.*` keys for section headers
+      - `boilerplate.yaml` → use localized status labels and boilerplate text
+   5. If the locale directory does not exist, fall back to `en` and warn: `"Warning: Locale '{lang}' not found. Using English."`
+   6. Apply the localized text when generating the spec document.
+
+4. **Generate `design.md`** with the following sections:
 
 ```markdown
 # Technical Design: <feature-name>
@@ -76,7 +86,7 @@ Generate a technical design document from approved requirements.
 <Map each requirement ID to the design component(s) that fulfill it>
 ```
 
-4. **Design principles to follow**:
+5. **Design principles to follow**:
    - Every architecture decision must include rationale
    - Component boundaries must be explicit with clear interfaces
    - API contracts must specify all error cases
@@ -84,9 +94,9 @@ Generate a technical design document from approved requirements.
    - Design for testability; avoid tight coupling
    - No premature optimization
 
-5. **Validate** that every requirement from `requirements.md` is addressed in the design.
+6. **Validate** that every requirement from `requirements.md` is addressed in the design.
 
-6. **Report** the output path and suggest `/kiro:spec-tasks` as the next step.
+7. **Report** the output path and suggest `/kiro:spec-tasks` as the next step.
 
 ## Output
 

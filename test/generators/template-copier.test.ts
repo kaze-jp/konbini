@@ -40,6 +40,16 @@ describe('copyTemplates', () => {
     expect(content).toContain('downstream: full-auto');
   });
 
+  it('copies locale files to .kiro/settings/locales/', async () => {
+    await copyTemplates(tmpDir, buildInitConfig('solo'));
+    expect(fs.existsSync(path.join(tmpDir, '.kiro', 'settings', 'locales', 'en', 'section-headers.yaml'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, '.kiro', 'settings', 'locales', 'ja', 'section-headers.yaml'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, '.kiro', 'settings', 'locales', 'en', 'ears-patterns.md'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, '.kiro', 'settings', 'locales', 'ja', 'ears-patterns.md'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, '.kiro', 'settings', 'locales', 'en', 'boilerplate.yaml'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, '.kiro', 'settings', 'locales', 'ja', 'boilerplate.yaml'))).toBe(true);
+  });
+
   it('does not overwrite existing ao.yaml', async () => {
     const aoDir = path.join(tmpDir, '.ao');
     fs.mkdirSync(aoDir, { recursive: true });

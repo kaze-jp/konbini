@@ -17,19 +17,30 @@ Expand initial requirements into a full, structured requirements document using 
    - `.ao/steering/tech.md` for technical constraints
    - `.ao/steering/structure.md` for codebase conventions
 
-3. **Expand each initial requirement** by:
+3. **Localization** — Determine the output language for the generated document:
+   1. Read `.ao/ao.yaml` and extract the top-level `language` field.
+   2. If not present, fall back to `claude_md.language`.
+   3. If neither exists, default to `en`.
+   4. Read the locale files from `.kiro/settings/locales/{language}/`:
+      - `section-headers.yaml` → use `requirements.*` keys for section headers
+      - `ears-patterns.md` → use localized EARS patterns for all requirement statements
+      - `boilerplate.yaml` → use localized status labels and boilerplate text
+   5. If the locale directory does not exist, fall back to `en` and warn: `"Warning: Locale '{lang}' not found. Using English."`
+   6. Apply the localized text when generating the spec document.
+
+4. **Expand each initial requirement** by:
    - Breaking compound requirements into atomic statements
    - Adding missing edge cases and error scenarios
    - Ensuring each requirement is testable and measurable
    - Applying the correct EARS pattern for each requirement type
 
-4. **Apply EARS format rules strictly**:
+5. **Apply EARS format rules strictly** (using patterns from the locale's `ears-patterns.md`):
    - Every requirement MUST follow one of the five EARS patterns
    - No ambiguous language (avoid "should", "may", "might")
    - Each requirement must be independently verifiable
    - Requirements must not describe implementation details
 
-5. **Generate `requirements.md`** with this structure:
+6. **Generate `requirements.md`** with this structure:
 
 ```markdown
 # Requirements: <feature-name>
@@ -72,9 +83,9 @@ NFR-020: ...
 <Map from requirements-init items to expanded requirements>
 ```
 
-6. **Validate completeness**: Ensure every item from `requirements-init.md` is addressed in the expanded document.
+7. **Validate completeness**: Ensure every item from `requirements-init.md` is addressed in the expanded document.
 
-7. **Report** the output path and suggest `/kiro:spec-design` as the next step.
+8. **Report** the output path and suggest `/kiro:spec-design` as the next step.
 
 ## Output
 

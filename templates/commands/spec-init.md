@@ -53,16 +53,27 @@ Initialize a new feature specification directory and generate initial requiremen
 <Questions that need answers before proceeding>
 ```
 
-5. **Apply EARS format** for all requirements:
+5. **Localization** — Determine the output language for the generated document:
+   1. Read `.ao/ao.yaml` and extract the top-level `language` field.
+   2. If not present, fall back to `claude_md.language`.
+   3. If neither exists, default to `en`.
+   4. Read the locale files from `.kiro/settings/locales/{language}/`:
+      - `section-headers.yaml` → use `requirements_init.*` keys for section headers
+      - `ears-patterns.md` → use localized EARS patterns for requirements
+      - `boilerplate.yaml` → use localized status labels and boilerplate text
+   5. If the locale directory does not exist, fall back to `en` and warn: `"Warning: Locale '{lang}' not found. Using English."`
+   6. Apply the localized text when generating the spec document.
+
+6. **Apply EARS format** for all requirements using the patterns from the locale's `ears-patterns.md`. If no locale was loaded, use the default English patterns:
    - Ubiquitous: "The <system> shall <action>"
    - Event-driven: "When <event>, the <system> shall <action>"
    - State-driven: "While <state>, the <system> shall <action>"
    - Optional: "Where <condition>, the <system> shall <action>"
    - Unwanted: "If <unwanted>, the <system> shall <action>"
 
-6. **Confirm with the user** that the initial requirements capture their intent before finalizing.
+7. **Confirm with the user** that the initial requirements capture their intent before finalizing.
 
-7. **Report** the created file path and suggest running `/kiro:spec-requirements` next to expand into full requirements.
+8. **Report** the created file path and suggest running `/kiro:spec-requirements` next to expand into full requirements.
 
 ## Output
 

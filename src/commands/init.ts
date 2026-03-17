@@ -166,6 +166,7 @@ export async function initProject(projectRoot: string, config: InitConfig, claud
     let aoContent = fs.readFileSync(aoYamlPath, 'utf-8');
     if (aoContent.includes('{{CLAUDE_MD_LANG}}')) {
       aoContent = aoContent
+        .replace('{{LANGUAGE}}', claudeMdConfig.language)
         .replace('{{CLAUDE_MD_LANG}}', claudeMdConfig.language)
         .replace('{{CLAUDE_MD_PATH}}', claudeMdConfig.path);
     } else if (!aoContent.includes('claude_md:')) {

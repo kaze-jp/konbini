@@ -8,6 +8,7 @@
 # custom:         個別設定
 preset: {{PRESET}}
 schema_version: 1
+language: {{LANGUAGE}}  # en, ja — spec document language (also used for CLAUDE.md if claude_md.language is not set)
 
 # --- 自律レベル ---
 autonomy:
