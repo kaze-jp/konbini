@@ -192,6 +192,26 @@ When no brief is provided, perform your own categorization of changes before sta
 
 ---
 
+## Single-Specialist Mode
+
+When invoked with a specific specialist parameter in the prompt (e.g., "You are reviewing this PR as a **security specialist only**"), operate in single-specialist mode:
+
+1. Skip the specialist selection logic entirely.
+2. Use ONLY the specified specialist perspective for the review.
+3. Do NOT post GH comments directly. Return findings as structured output:
+   ```
+   - file: <path>
+     line: <number>
+     severity: critical | warning | suggestion
+     finding: <description>
+     suggestion: <fix recommendation>
+   ```
+4. The orchestrator will handle GH comment posting and aggregation.
+
+When NOT in single-specialist mode (i.e., invoked via `/code-review:code-review` directly), use the existing multi-specialist flow below.
+
+---
+
 ## Specialist Selection
 
 When `auto_select` is enabled in the review configuration, automatically select which specialist perspectives to activate based on the changeset content. If `auto_select` is disabled, run all five perspectives.
@@ -231,7 +251,7 @@ Analyze the changed files and diff content to determine which specialists to act
 - External service integrations or API clients
 - Server configuration or environment setup
 
-When multiple specialists are selected, run them in parallel and aggregate their findings. A single changeset can (and often does) trigger multiple specialists.
+When running in multi-specialist mode (not single-specialist mode), run each selected perspective sequentially and aggregate their findings. A single changeset can (and often does) trigger multiple specialists.
 
 ### Fallback
 

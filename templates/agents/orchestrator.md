@@ -385,7 +385,6 @@ Feature: <feature-name>
 
 **Skills to invoke:**
 - `/superpowers:requesting-code-review` — prepare the PR for review
-- `/code-review:code-review` — run the multi-specialist review
 
 **Steps:**
 
@@ -412,7 +411,7 @@ Feature: <feature-name>
    - Read `.ao/memory/review-patterns/` for patterns relevant to the changed files.
    - Include these patterns as additional review context.
 
-4. **Run multi-specialist review** via `/code-review:code-review`.
+4. **Spawn parallel specialist reviews.**
 
    **Specialist selection** (if `reviews.phase6_pr_review.auto_select: true`):
    - Analyze changed files to determine which specialists are relevant:
@@ -422,25 +421,59 @@ Feature: <feature-name>
      - `backend` → API routes, DB queries, server logic
    - If `auto_select: false` → run ALL specialists.
 
-   **Run selected specialists in parallel.** Each specialist produces review findings.
-
-5. **Post review comments to GitHub.**
-
-   For each finding, post a GH review comment:
+   **For each selected specialist, spawn a Reviewer sub-agent** using the Agent tool:
 
    ```
-   🤖 [ao-review/<specialist>] <finding description>
+   Agent(
+     description: "<specialist> code review",
+     subagent_type: "feature-dev:code-reviewer",
+     prompt: """
+       You are reviewing this PR as a **<specialist> specialist only**.
 
-   <details with code suggestion or explanation>
+       PR: <PR URL>
+       Run `gh pr diff <PR_NUMBER>` to get the diff.
+
+       Review focus brief: <contents from .ao/context/task-*-review-focus.md>
+       Memory patterns: <relevant patterns from .ao/memory/review-patterns/>
+
+       Review ONLY from the <specialist> perspective.
+       Return findings as a structured list:
+       - file: <path>
+         line: <number>
+         severity: critical | warning | suggestion
+         finding: <description>
+         suggestion: <fix recommendation>
+
+       If you find no issues, return: "No findings."
+     """
+   )
    ```
+
+   **Launch ALL specialist agents in a single message** to execute in parallel.
+   Wait for all agents to complete, then collect their findings.
+
+5. **Aggregate findings and post review comments to GitHub.**
+
+   a. Collect findings from all specialist Reviewer agents.
+   b. Detect contradictions: if two specialists produce conflicting recommendations
+      for the same file and line range, flag as contradiction.
+   c. Post each finding as a GH review comment:
+      ```
+      🤖 [ao-review/<specialist>] <finding description>
+
+      <details with code suggestion or explanation>
+      ```
+   d. Post contradiction notes where detected:
+      ```
+      🤖 [ao-review/note] Contradictory findings between <A> and <B> specialists.
+      Both comments preserved — will resolve in Phase 7.
+      ```
+   e. If a specialist agent failed or timed out, post a note:
+      ```
+      🤖 [ao-review/note] <specialist> review was skipped due to agent failure.
+      ```
 
    Use `gh api` to post review comments on the PR.
-
-   If specialists produce contradictory findings, post BOTH and note the contradiction:
-   ```
-   🤖 [ao-review/note] Contradictory findings between security and quality specialists.
-   Both comments preserved — will resolve in Phase 7.
-   ```
 
 6. **Determine review result:**
    - If zero findings → APPROVE and proceed to Phase 8.
@@ -476,7 +509,11 @@ WHILE findings exist AND iteration < max_iterations:
     4. If simplify.auto_points includes after_review_fixes:
        - Run /simplify (autonomous decision based on change size).
     5. Push changes.
-    6. Re-run /code-review:code-review on the updated diff.
+    6. Re-run parallel specialist reviews on the updated diff.
+       - Spawn Reviewer sub-agents ONLY for specialists that produced findings
+         in the previous iteration.
+       - Use the same Agent tool parallel spawn pattern as Phase 6 Step 4.
+       - Collect and aggregate findings (same as Phase 6 Step 5).
     7. If new findings → continue loop.
     8. If no findings → APPROVE.
     INCREMENT iteration.
